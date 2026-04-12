@@ -1,0 +1,51 @@
+<aside class="h-screen w-64 fixed left-0 top-0 bg-slate-100 dark:bg-slate-900 flex flex-col py-4 space-y-2 font-sans text-sm tracking-wide transition-all duration-200 ease-in-out border-r border-outline-variant/10">
+
+<!-- Logo Título do sistema -->
+<div class="px-6 mb-8">
+    <h1 class="text-lg font-black text-blue-900 dark:text-white uppercase">
+        EstoquePIM
+    </h1>
+    <p class="text-[10px] text-slate-500 font-bold tracking-widest uppercase">
+        Manaus Industrial Hub
+    </p>
+</div>
+
+<!-- Menu de navegação -->
+<nav class="flex-1">
+    <a  routerLink="/app/dashboard"
+        routerLinkActive="nav-link-active"
+        class="nav-link">
+    <span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+        Dashboard
+    </a>
+    
+    <a  routerLink="/app/insumos"
+        routerLinkActive="nav-link-active"
+        class="nav-link">
+    <span class="material-symbols-outlined" data-icon="inventory_2">inventory_2</span>
+        Insumos
+    </a>
+
+    <a  routerLink="/app/movimentacoes"
+        routerLinkActive="nav-link-active"
+        class="nav-link">
+    <span class="material-symbols-outlined" data-icon="swap_horiz">swap_horiz</span>
+        Movimentações
+    </a>
+
+    <a  routerLink="/app/categorias"
+        routerLinkActive="nav-link-active"
+        class="nav-link">
+    <span class="material-symbols-outlined" data-icon="category" style="font-variation-settings: 'FILL' 1;">category</span>
+        Categorias
+    </a>
+</nav>
+
+<!-- Botão de sair -->
+<div class="mt-auto border-t border-outline-variant/10 pt-4">
+    <a (click)="onSair()" class="nav-link">
+    <span class="material-symbols-outlined" data-icon="logout">logout</span>
+        Sair
+    </a>
+</div>
+</aside>

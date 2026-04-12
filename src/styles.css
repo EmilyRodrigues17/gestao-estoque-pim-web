@@ -1,3 +1,29 @@
 /* You can add global styles to this file, and also import other style files */
 
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap');
+
 @import 'tailwindcss';
+
+@theme {
+    --color-primary: #003b93;
+    --color-primary-container: #0051c3;
+    --color-on-primary: #ffffff;
+    --color-surface: #fbf9f8;
+    --color-on-surface: #1b1c1c;
+    --color-on-background: #1b1c1c;
+    --color-outline-variant: #c3c6d6;
+    --color-secondary: #006780;
+    --color-error: #ba1a1a;
+    --font-family-sans: 'Inter', sans-serif;
+}
+
+body {
+  background-color: #fbf9f8;
+  color: #1b1c1c;
+  font-family: 'Inter', sans-serif;
+}
+
+.material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
