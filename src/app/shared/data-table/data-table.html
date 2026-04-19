@@ -1,0 +1,123 @@
+<div class="bg-surface-container-lowest rounded-xl p-6 shadow-sm ring-1 ring-black/[0.02]">
+
+  <!-- Cabeçalho: Título + Badge -->
+  <div class="flex justify-between items-center mb-6">
+    <h3 class="text-sm font-bold text-on-surface-variant uppercase tracking-wider">
+      {{ title() }}
+    </h3>
+    @if (badgeText()) {
+      <span class="bg-surface-container-low px-3 py-1 rounded-full text-xs font-semibold text-primary">
+        {{ badgeText() }}
+      </span>
+    }
+  </div>
+
+  <!-- Tabela -->
+  <div class="overflow-x-auto">
+    <table class="w-full border-collapse">
+
+      <!-- Cabeçalho das colunas (gerado dinamicamente) -->
+      <thead>
+        <tr class="bg-surface-container-low text-left">
+          @for (col of columns(); track col.key; let first = $first; let last = $last) {
+            <th class="p-4 text-xs font-bold uppercase tracking-widest text-on-surface-variant opacity-70"
+                [class.rounded-l-lg]="first && !last"
+                [class.rounded-r-lg]="last && !showActions()"
+                [class.text-right]="col.align === 'right'">
+              {{ col.header }}
+            </th>
+          }
+          @if (showActions()) {
+            <th class="p-4 text-xs font-bold uppercase tracking-widest text-on-surface-variant opacity-70 rounded-r-lg text-right">
+              Ações
+            </th>
+          }
+        </tr>
+      </thead>
+
+      <!-- Corpo da tabela (linhas geradas dinamicamente) -->
+      <tbody class="divide-y divide-surface-container">
+        @for (item of data(); track $index) {
+          <tr class="group hover:bg-surface-container-low/50 transition-colors">
+
+            @for (col of columns(); track col.key; let colFirst = $first) {
+              <td class="p-4 text-sm"
+                  [class.font-semibold]="colFirst"
+                  [class.text-on-surface]="colFirst"
+                  [class.text-on-surface-variant]="!colFirst"
+                  [class.text-right]="col.align === 'right'">
+
+                  @if (col.type === 'badge') {
+                    <span class="font-mono text-xs px-2 py-0.5 rounded"
+                          [ngClass]="getBadgeClass(item, col)">
+                      {{ getCellValue(item, col.key) }}
+                    </span>
+                  } @else {
+                    {{ getCellValue(item, col.key) }}
+                  }
+
+              </td>
+            }
+
+            <!-- Coluna de Ações -->
+            @if (showActions()) {
+              <td class="p-4 text-right">
+                <div class="flex justify-end gap-2">
+                  @for (act of actions(); track act.event) {
+                    <button (click)="onAction(act.event, item)"
+                          class="p-2 text-on-surface-variant rounded-md transition-all"
+                          [ngClass]="act.color || 'hover:text-primary hover:bg-primary/5'"
+                          [title]="act.label">
+                      <span class="material-symbols-outlined text-sm">{{ act.icon }}</span>
+                    </button>
+                  }
+                </div>
+              </td>
+            }
+
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Paginação -->
+  <div class="flex flex-col sm:flex-row justify-between items-center mt-6 pt-6 border-t border-surface-container gap-4">
+    <p class="text-xs text-on-surface-variant font-medium">
+      Mostrando <span class="font-bold">{{ displayRange().start }}-{{ displayRange().end }}</span>
+      de <span class="font-bold">{{ pagination().totalItems }}</span> {{ itemName() }}
+    </p>
+    <nav class="flex items-center gap-1">
+      <!-- Botão Anterior -->
+      <button (click)="onPageChange(pagination().currentPage - 1)"
+              [disabled]="pagination().currentPage === 1"
+              class="p-1 text-on-surface-variant hover:bg-surface-container-high rounded transition-colors disabled:opacity-30">
+        <span class="material-symbols-outlined text-lg">chevron_left</span>
+      </button>
+
+      <!-- Números de Página -->
+      @for (page of pages(); track $index) {
+        @if (page === -1) {
+          <span class="px-2 py-1 text-on-surface-variant text-xs font-bold select-none">...</span>
+        }
+        @else {
+          <button (click)="onPageChange(page)"
+                [class]="page === pagination().currentPage
+                  ? 'px-3 py-1 bg-primary text-white text-xs font-bold rounded shadow-sm'
+                  : 'px-3 py-1 text-on-surface-variant hover:bg-surface-container-high text-xs font-bold rounded transition-colors'">
+            {{ page }}
+          </button>
+        }
+        
+      }
+
+      <!-- Botão Próximo -->
+      <button (click)="onPageChange(pagination().currentPage + 1)"
+              [disabled]="pagination().currentPage === totalPages()"
+              class="p-1 text-on-surface-variant hover:bg-surface-container-high rounded transition-colors disabled:opacity-30">
+        <span class="material-symbols-outlined text-lg">chevron_right</span>
+      </button>
+    </nav>
+  </div>
+
+</div>
