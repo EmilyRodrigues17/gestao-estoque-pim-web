@@ -1,4 +1,125 @@
-<div>
+<div class="p-8 space-y-8">
   <h2 class="text-2xl font-bold text-slate-800 mb-4">Categorias</h2>
   <p class="text-slate-600">Aqui será exibido o catalogo e formulario de categorias.</p>
+
+  <!-- Mensagens de Feedback -->
+  @if (error()) {
+    <div class="bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg p-4 flex items-center gap-3">
+      <span class="material-symbols-outlined text-lg">error</span>
+      <span>{{ error() }}</span>
+      <button (click)="error.set(null)" class="ml-auto text-red-400 hover:text-red-600">
+        <span class="material-symbols-outlined text-lg">close</span>
+      </button>
+    </div>
+  }
+  @if (successMessage()) {
+    <div class="bg-green-50 border border-green-200 text-green-700 text-sm rounded-lg p-4 flex items-center gap-3">
+      <span class="material-symbols-outlined text-lg">check_circle</span>
+      <span>{{ successMessage() }}</span>
+      <button (click)="successMessage.set(null)" class="ml-auto text-green-400 hover:text-green-600">
+        <span class="material-symbols-outlined text-lg">close</span>
+      </button>
+    </div>
+  }
+
+  <div class="grid grid-cols-12 gap-8">
+    <section class="col-span-12 lg:col-span-8 space-y-4">
+      @if (loading() && categorias().length === 0) {
+        <div class="bg-surface-container-lowest rounded-xl p-12 shadow-sm ring-1 ring-black/[0.02] flex flex-col items-center gap-3">
+          <span class="material-symbols-outlined text-4xl text-primary animate-spin">progress_activity</span>
+          <p class="text-sm text-on-surface-variant">Carregando categorias...</p>
+        </div>
+      } @else {
+        <app-data-table
+          [title]="'Lista de Categorias'"
+          [badgeText]="categorias().length + ' Cadastradas'"
+          [itemName]="'categorias'"
+          [columns]="columns"
+          [data]="categorias()"
+          [pagination]="pagination()"
+          (edit)="onEdit($event)"
+          (delete)="onDelete($event)"
+          (pageChange)="onPageChange($event)"
+        />
+      }
+    </section>
+    <!-- Formulario -->
+    <aside class="col-span-12 lg:col-span-4">
+      <div class="bg-surface-container-lowest rounded-xl p-6 shadow-sm sticky top-24 ring-1 ring-black/[0.02]">
+        <h3 class="text-label-md font-bold text-on-surface-variant uppercase tracking-wider mb-6">
+          {{ editId() ? 'Editar Categoria' : 'Nova Categoria'}}
+        </h3>
+        <form (ngSubmit)="onSubmit()" class="space-y-6">
+          <div class="space-y-1.5">
+            <label class="text-xs font-bold text-on-surface-variant/80 uppercase tracking-tighter">
+              Nome da Categoria
+            </label>
+            <input [(ngModel)]="nome" name="nome" class="w-full bg-surface-container-high border-none rounded-md px-4 py-3 text-sm focus:ring-0 focus:border-b-2 focus:border-primary transition-all placeholder:text-on-surface-variant/40" placeholder="Ex: Metais Ferrosos" type="text"/>
+          </div>
+
+          <div class="space-y-1.5">
+            <label class="text-xs font-bold text-on-surface-variant/80 uppercase tracking-tighter">Descrição</label>
+            <textarea [(ngModel)]="descricao" name="descricao" class="w-full bg-surface-container-high border-none rounded-md px-4 py-3 text-sm focus:ring-0 focus:border-b-2 focus:border-primary transition-all placeholder:text-on-surface-variant/40" placeholder="Detalhes técnicos e aplicações..." rows="4"></textarea>
+          </div>
+
+          <div class="pt-4 flex flex-col gap-3">
+            @if (editId()) {
+              <button
+                [disabled]="loading()"
+                class="w-full bg-gradient-to-br from-primary to-primary-container text-white font-bold py-3 px-4 rounded-md shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:hover:scale-100"
+                type="submit">
+                <span class="material-symbols-outlined text-lg">save</span>
+                {{ loading() ? 'Salvando...' : 'Salvar Alterações' }}
+              </button>
+              <button
+                (click)="onCancelEdit()"
+                class="w-full bg-transparent text-on-surface-variant font-semibold py-2 px-4 rounded-md hover:bg-surface-variant transition-colors text-xs uppercase tracking-widest"
+                type="button">
+                Cancelar
+              </button>
+            } @else {
+              <button
+                [disabled]="loading()"
+                class="w-full bg-gradient-to-br from-primary to-primary-container text-white font-bold py-3 px-4 rounded-md shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:hover:scale-100"
+                type="submit">
+                <span class="material-symbols-outlined text-lg">add_circle</span>
+                {{ loading() ? 'Salvando...' : 'Salvar Categoria' }}
+              </button>
+              <button class="w-full bg-transparent text-on-surface-variant font-semibold py-2 px-4 rounded-md hover:bg-surface-variant transition-colors text-xs uppercase tracking-widest" type="reset">
+                Limpar Campos
+              </button>
+            }
+          </div>
+        </form>
+      </div>
+    </aside>
+  </div>
 </div>
+
+<!-- Modal de Exclusão de Categorias -->
+@if (deleteTarget()) {
+  <div class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" (click)="onCancelDelete()">
+    <div class="bg-white rounded-xl p-6 max-w-md w-full shadow-2xl space-y-4" (click)="$event.stopPropagation()">
+      <div class="flex items-center gap-3">
+        <span class="material-symbols-outlined text-2xl text-red-500">warning</span>
+        <h3 class="text-lg font-bold text-slate-800">Confirmar Exclusão</h3>
+      </div>
+      <p class="text-sm text-slate-600">
+        Tem certeza que deseja excluir a categoria <strong>{{ deleteTarget()!.nome }}</strong>?
+        Esta ação não pode ser desfeita.
+      </p>
+      <div class="flex gap-3 justify-end pt-2">
+        <button
+          (click)="onCancelDelete()"
+          class="px-4 py-2 text-sm text-slate-600 hover:text-slate-900 font-medium rounded-md hover:bg-slate-100 transition-colors">
+          Cancelar
+        </button>
+        <button
+          (click)="onConfirmDelete()"
+          class="px-4 py-2 text-sm text-white bg-red-500 hover:bg-red-600 font-bold rounded-md shadow transition-colors">
+          Excluir
+        </button>
+      </div>
+    </div>
+  </div>
+}
