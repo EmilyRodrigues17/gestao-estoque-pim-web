@@ -1,4 +1,5 @@
 import { Routes } from '@angular/router';
+import { unsavedChangesGuard } from './core/guards/unsaved-changes-guard';
 
 export const routes: Routes = [
     {
@@ -17,6 +18,7 @@ export const routes: Routes = [
             {
                 path: 'insumos',
                 loadComponent: () => import('./features/insumos/insumos').then(m => m.Insumos),
+                canDeactivate: [unsavedChangesGuard]
             },
             {
                 path: 'movimentacoes',
