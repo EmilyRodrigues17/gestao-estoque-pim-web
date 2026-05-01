@@ -1,7 +1,4 @@
 <div class="p-8 space-y-8">
-  <h2 class="text-2xl font-bold text-slate-800 mb-4">Categorias</h2>
-  <p class="text-slate-600">Aqui será exibido o catalogo e formulario de categorias.</p>
-
   <!-- Mensagens de Feedback -->
   @if (error()) {
     <div class="bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg p-4 flex items-center gap-3">
@@ -31,16 +28,43 @@
         </div>
       } @else {
         <app-data-table
-          [title]="'Lista de Categorias'"
+          title="Lista de Categorias"
           [badgeText]="categorias().length + ' Cadastradas'"
-          [itemName]="'categorias'"
+          itemName="categorias"
+          emptyMessage="Nenhuma categoria encontrada."
           [columns]="columns"
-          [data]="categorias()"
-          [pagination]="pagination()"
-          (edit)="onEdit($event)"
-          (delete)="onDelete($event)"
-          (pageChange)="onPageChange($event)"
-        />
+          [data]="paginatedCategorias()"
+          [totalItems]="totalItems()"
+          [currentPage]="currentPage()"
+          [itemsPerPage]="itemsPerPage()"
+          (pageChange)="onPageChange($event)">
+
+          <ng-template #cellTemplate let-item let-col="col">
+            @switch (col.key) {
+              @case ('insumosVinculados') {
+                <span class="inline-flex items-center justify-center min-w-[2rem] text-primary-container text-[10px] font-black uppercase px-2 py-0.5 rounded-full bg-primary-fixed">
+                  {{ item.insumosVinculados || 0 }}
+                </span>
+              }
+              @case ('acoes') {
+                <div class="flex items-center justify-end gap-1">
+                  <button
+                    (click)="onEdit(item)"
+                    class="p-2 rounded-lg text-on-surface-variant hover:text-primary hover:bg-primary/5 transition-colors"
+                    title="Editar">
+                    <span class="material-symbols-outlined text-xl">edit</span>
+                  </button>
+                  <button
+                    (click)="onDelete(item)"
+                    class="p-2 rounded-lg text-on-surface-variant hover:text-red-600 hover:bg-red-50 transition-colors"
+                    title="Excluir">
+                    <span class="material-symbols-outlined text-xl">delete</span>
+                  </button>
+                </div>
+              }
+            }
+          </ng-template>
+        </app-data-table>
       }
     </section>
     <!-- Formulario -->

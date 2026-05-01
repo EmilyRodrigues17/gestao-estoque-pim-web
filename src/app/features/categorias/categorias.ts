@@ -1,33 +1,40 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { DataTable } from '../../shared/data-table/data-table';
-import { PaginationInfo, TableColumn } from '../../core/models/data-table';
+import { TableColumn } from '../../core/models/data-table';
 import { CategoriaService } from '../../core/services/categoria.service';
 import { Categoria } from '../../core/models/categoria';
 
 @Component({
   selector: 'app-categorias',
-  imports: [DataTable, FormsModule],
+  imports: [FormsModule, DataTable],
   templateUrl: './categorias.html',
   styleUrl: './categorias.css',
 })
 export class Categorias implements OnInit {
   private categoriaService = inject(CategoriaService);
 
-  // Configuração das colunas da tabela exibida
-  columns: TableColumn[] = [
-    { key: 'nome',              header: 'Nome' },
-    { key: 'descricao',         header: 'Descrição' },
-    { key: 'insumosVinculados', header: 'Insumos Vinculados', type: 'badge' },
-  ];
 
   categorias = signal<Categoria[]>([]);
 
-  pagination = signal<PaginationInfo>({
-    currentPage: 1,
-    totalItems: 0,
-    itemsPerPage: 5,
+  currentPage = signal<number>(1);
+  itemsPerPage = signal<number>(5);
+  
+  totalItems = computed(() => this.categorias()?.length || 0);
+
+  paginatedCategorias = computed(() => {
+    const data = this.categorias() || [];
+    const start = (this.currentPage() - 1) * this.itemsPerPage();
+    const end = start + this.itemsPerPage();
+    return data.slice(start, end);
   });
+
+  columns: TableColumn[] = [
+    { key: 'nome', header: 'Nome' },
+    { key: 'descricao', header: 'Descrição' },
+    { key: 'insumosVinculados', header: 'Insumos Vinculados', type: 'custom' },
+    { key: 'acoes', header: 'Ações', type: 'custom', align: 'right' }
+  ];
 
   editId = signal<string | null>(null);
   nome = signal('');
@@ -48,10 +55,7 @@ export class Categorias implements OnInit {
     this.categoriaService.findAll().subscribe({
       next: (categorias) => {
         this.categorias.set(categorias);
-        this.pagination.update(p => ({
-          ...p,
-          totalItems: categorias.length,
-        }));
+        this.currentPage.set(1);
         this.loading.set(false);
       },
       error: (err) => {
@@ -147,8 +151,10 @@ export class Categorias implements OnInit {
     });
   }
 
-  onPageChange(page: number): void {
-    this.pagination.update(p => ({ ...p, currentPage: page }));
+  onPageChange(page: number | string) {
+    if (typeof page === 'number') {
+      this.currentPage.set(page);
+    }
   }
 
   /** Tratamento de erros da API */
