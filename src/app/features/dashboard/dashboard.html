@@ -1,4 +1,134 @@
-<div>
-  <h2 class="text-2xl font-bold text-slate-800 mb-4">Dashboard</h2>
-  <p class="text-slate-600">Aqui serão exibidos os alertas e indicadores do estoque.</p>
+<div class="p-8 max-w-7x1 mx-auto w-full space-y-8">
+  <!-- Metric Section: The Industrial Architect Stat Cards -->
+  <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+    <!-- Abaixo do Mínimo -->
+    <div
+      class="bg-surface-container-lowest rounded-xl p-5 border-l-4 border-tertiary flex flex-col justify-between h-32">
+      <div class="flex justify-between items-start">
+        <span class="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">Abaixo do Mínimo</span>
+        <span class="material-symbols-outlined text-tertiary" data-icon="warning">warning</span>
+      </div>
+      <div class="flex items-baseline gap-2">
+        <span class="text-3xl font-extrabold text-on-surface monospace">{{ dashboardData()?.totalInsumosAbaixoMinimo ||
+          0 }}</span>
+        <span class="text-xs text-tertiary font-medium">Requerem atenção</span>
+      </div>
+    </div>
+    <!-- Zerados -->
+    <div class="bg-surface-container-lowest rounded-xl p-5 border-l-4 border-error flex flex-col justify-between h-32">
+      <div class="flex justify-between items-start">
+        <span class="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">Zerados</span>
+        <span class="material-symbols-outlined text-error" data-icon="error">error</span>
+      </div>
+      <div class="flex items-baseline gap-2">
+        <span class="text-3xl font-extrabold text-on-surface monospace">{{ dashboardData()?.totalInsumosZerados || 0
+          }}</span>
+        <span class="text-xs text-error font-medium">Ação imediata</span>
+      </div>
+    </div>
+    <!-- Movimentações Hoje -->
+    <div
+      class="bg-surface-container-lowest rounded-xl p-5 border-l-4 border-secondary flex flex-col justify-between h-32">
+      <div class="flex justify-between items-start">
+        <span class="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">Movimentações Hoje</span>
+        <span class="material-symbols-outlined text-secondary" data-icon="swap_horiz">swap_horiz</span>
+      </div>
+      <div class="flex items-baseline gap-2">
+        <span class="text-3xl font-extrabold text-on-surface monospace">{{ dashboardData()?.movimentacoesHoje || 0
+          }}</span>
+        <span class="text-xs text-secondary font-medium">Hoje</span>
+      </div>
+    </div>
+    <!-- Total Unidades -->
+    <div
+      class="bg-surface-container-lowest rounded-xl p-5 border-l-4 border-primary flex flex-col justify-between h-32">
+      <div class="flex justify-between items-start">
+        <span class="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">Volume em Estoque</span>
+        <span class="material-symbols-outlined text-primary" data-icon="inventory">inventory</span>
+      </div>
+      <div class="flex items-baseline gap-2">
+        <span class="text-3xl font-extrabold text-on-surface monospace">{{ dashboardData()?.totalUnidadesEstoque || 0
+          }}</span>
+        <span class="text-xs text-on-surface-variant font-medium">Estoque Geral</span>
+      </div>
+    </div>
+  </section>
+  <!-- Main Content: Tabela Insumos Críticos -->
+  <section class="space-y-4">
+    <div class="flex items-end justify-between px-2">
+      <div>
+        <h3 class="text-2xl font-bold text-primary tracking-tight">Insumos Críticos</h3>
+        <p class="text-sm text-on-surface-variant">Itens requerendo reposição imediata baseados no nível de estoque de
+          segurança.</p>
+      </div>
+
+    </div>
+    
+    <app-data-table
+      itemName="insumos"
+      emptyMessage="Nenhum insumo em estado crítico."
+      [columns]="columns"
+      [data]="paginatedInsumos()"
+      [totalItems]="totalItems()"
+      [currentPage]="currentPage()"
+      [itemsPerPage]="itemsPerPage()"
+      (pageChange)="onPageChange($event)">
+
+      <ng-template #cellTemplate let-insumo let-col="col">
+        @switch (col.key) {
+          @case ('insumo') {
+            <div class="flex items-center gap-3">
+              <div [class]="insumo.estoque_atual === 0 ? 'w-10 h-10 rounded bg-error/10 flex items-center justify-center' : 'w-10 h-10 rounded bg-tertiary-fixed flex items-center justify-center'">
+                <span [class]="insumo.estoque_atual === 0 ? 'material-symbols-outlined text-error' : 'material-symbols-outlined text-tertiary'" data-icon="inventory_2">inventory_2</span>
+              </div>
+              <div>
+                <p class="font-bold text-on-surface">{{ insumo.nome }}</p>
+                <p class="text-[10px] text-on-surface-variant monospace">SKU: {{ insumo.codigo }}</p>
+              </div>
+            </div>
+          }
+          @case ('categoria') {
+            <span class="text-xs px-2 py-1 bg-surface-container-high text-on-surface rounded-md">{{ insumo.categoria }}</span>
+          }
+          @case ('estoque_atual') {
+            <span [class]="insumo.estoque_atual === 0 ? 'text-lg font-extrabold text-error monospace' : 'text-lg font-extrabold text-tertiary monospace'">{{ insumo.estoque_atual }}</span>
+          }
+          @case ('estoque_minimo') {
+            <span class="text-sm font-medium text-on-surface-variant monospace">{{ insumo.estoque_minimo }}</span>
+          }
+          @case ('status') {
+            <div class="w-full max-w-[120px]">
+              <div class="flex justify-between mb-1 text-[10px] font-bold uppercase"
+                [ngClass]="{
+                  'text-error': insumo.status === 'critico',
+                  'text-warning': insumo.status === 'atencao',
+                  'text-info': insumo.status === 'limite_proximo',
+                  'text-tertiary': insumo.status === 'estavel'
+                }">
+                {{ getLabel(insumo) }}
+              </div>
+              <div class="h-1.5 w-full bg-surface-container rounded-full overflow-hidden">
+                <div class="h-full rounded-full transition-all duration-500"
+                  [style.width.%]="insumo.percentual"
+                  [ngClass]="{
+                    'bg-error': insumo.status === 'critico',
+                    'bg-warning': insumo.status === 'atencao',
+                    'bg-info': insumo.status === 'limite_proximo',
+                    'bg-tertiary': insumo.status === 'estavel'
+                  }">
+                </div>
+              </div>
+            </div>
+          }
+          @case ('acoes') {
+            <div class="flex items-center justify-end gap-1">
+              <button (click)="onTableAction('view', insumo)" class="p-2 rounded-lg text-on-surface-variant hover:text-secondary hover:bg-secondary/5 transition-colors" title="Visualizar">
+                <span class="material-symbols-outlined text-xl">visibility</span>
+              </button>
+            </div>
+          }
+        }
+      </ng-template>
+    </app-data-table>
+  </section>
 </div>
