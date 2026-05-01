@@ -1,26 +1,30 @@
 import { Component, computed, contentChild, input, output, TemplateRef } from '@angular/core';
-import { PaginationInfo, TableAction, TableColumn } from '../../core/models/data-table';
-import { NgClass } from '@angular/common';
+import { TableAction, TableColumn } from '../../core/models/data-table';
+import { NgClass, NgTemplateOutlet } from '@angular/common';
 
 @Component({
   selector: 'app-data-table',
-  imports: [NgClass],
+  imports: [NgClass, NgTemplateOutlet],
   templateUrl: './data-table.html',
   styleUrl: './data-table.css',
 })
 export class DataTable {
-  title = input.required<string>();
+  title = input<string>();
 
   badgeText = input<string>('');
 
   itemName = input<string>('itens');
+  emptyMessage = input<string>('Nenhum registro encontrado.');
 
   columns = input.required<TableColumn[]>();
 
-  /* Array de dados para exibir na tabela*/
+  /* Array de dados já paginados para exibir na tabela*/
   data = input.required<any[]>();
 
-  pagination = input.required<PaginationInfo>();
+  /* Inputs de Paginação Diretos */
+  currentPage = input<number>(1);
+  itemsPerPage = input<number>(5);
+  totalItems = input.required<number>();
 
   /* Ações das tabelas */
   showActions = input<boolean>(true);
@@ -38,49 +42,48 @@ export class DataTable {
   pageChange = output<number>();
 
   cellTemplate = contentChild<TemplateRef<any>>('cellTemplate');
+  
+  rowClassFn = input<(item: any) => string>();
 
-  /* calculando total de paginas */
-  totalPages = computed(() => {
-    const pag = this.pagination();
-    return Math.ceil(pag.totalItems / pag.itemsPerPage);
-  });
+  /* calculando paginação e ranges */
+  totalPages = computed(() => Math.max(1, Math.ceil(this.totalItems() / this.itemsPerPage())));
+
+  startIndex = computed(() => (this.currentPage() - 1) * this.itemsPerPage());
+  endIndex = computed(() => Math.min(this.startIndex() + this.itemsPerPage(), this.totalItems()));
 
   pages = computed(() => {
     const total = this.totalPages();
-    const current = this.pagination().currentPage;
+    const current = this.currentPage();
+    const delta = 1;
 
     if (total <= 5) {
-      return Array.from({ length: total }, (_, p) => p + 1);
+      return Array.from({ length: total }, (_, i) => i + 1);
     }
 
-    // se tem mais de 5, comeca a mostrar pagina com ...
-    const pages: number[] = [];
-    const groupSize = 3;
+    const pagesArr: (number | string)[] = [];
+    pagesArr.push(1);
 
-    const groupStart = Math.floor((current - 1) / groupSize) * groupSize + 1;
-    const groupEnd = Math.min(groupStart + groupSize - 1, total);
-
-    for (let i = groupStart; i <= groupEnd; i++) {
-      pages.push(i);
+    if (current - delta > 2) {
+      pagesArr.push('...');
     }
 
-    if (groupEnd < total) {
-      pages.push(-1);    // usado para reticências
-      pages.push(total); // última página
+    for (let i = Math.max(2, current - delta); i <= Math.min(total - 1, current + delta); i++) {
+      pagesArr.push(i);
     }
 
-    return pages;
+    if (current + delta < total - 1) {
+      pagesArr.push('...');
+    }
+
+    if (total > 1) {
+      pagesArr.push(total);
+    }
+
+    return pagesArr;
   });
 
-  displayRange = computed(() => {
-    const pag = this.pagination();
-    const start = (pag.currentPage - 1) * pag.itemsPerPage + 1;
-    const end = Math.min(pag.currentPage * pag.itemsPerPage, pag.totalItems);
-    return { start, end };
-  });
-
-  onPageChange(page: number): void {
-    if (page >= 1 && page <= this.totalPages()){
+  onPageChange(page: number | string): void {
+    if (typeof page === 'number' && page >= 1 && page <= this.totalPages()){
       this.pageChange.emit(page);
     }
   }

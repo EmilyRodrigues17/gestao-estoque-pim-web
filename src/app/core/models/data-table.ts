@@ -4,9 +4,10 @@ export interface TableColumn {
     key: string;
     header: string;
     align?: 'left' | 'right';
-    type?: 'text' | 'badge';
+    type?: 'text' | 'badge' | 'custom';
     badgeColors?: { [valor: string] : string };
 }
+
 
 export interface PaginationInfo {
     currentPage: number;
