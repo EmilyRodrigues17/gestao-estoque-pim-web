@@ -36,4 +36,5 @@ export interface UpdateInsumo {
     estoque_maximo?: number | null;
     localizacao?: string;
     categoria_id?: string;
+    ativo?: boolean;
 }

@@ -1,44 +1,31 @@
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
-import { DataTable } from '../../shared/data-table/data-table';
-import { PaginationInfo, TableAction, TableColumn } from '../../core/models/data-table';
+import { TableColumn } from '../../core/models/data-table';
 import { InsumoService } from '../../core/services/insumo.service';
 import { CategoriaService } from '../../core/services/categoria.service';
 import { CreateInsumo, Insumo } from '../../core/models/insumo';
 import { Categoria } from '../../core/models/categoria';
 import { FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { HasUnsavedChanges } from '../../core/guards/unsaved-changes-guard';
+import { Router } from '@angular/router';
+import { AuthService } from '../../core/auth/auth.service';
+import { PerfilAcesso } from '../../core/models/perfil-acesso';
+import { NgClass } from '@angular/common';
+import { DataTable } from '../../shared/data-table/data-table';
 
 @Component({
   selector: 'app-insumos',
-  imports: [DataTable, ReactiveFormsModule, FormsModule],
+  imports: [ReactiveFormsModule, FormsModule, NgClass, DataTable],
   templateUrl: './insumos.html',
   styleUrl: './insumos.css',
 })
 export class Insumos implements OnInit, HasUnsavedChanges{
   private insumoService = inject(InsumoService);
-  private categoriaService = inject(CategoriaService); 
+  private categoriaService = inject(CategoriaService);
+  private authService = inject(AuthService);
+  
+  private router = inject(Router);
 
-  // Config da tabela
-  columns: TableColumn[] = [
-      { key: 'codigo', header: 'Código' },
-      { key: 'nome', header: 'Nome do Insumo' },
-      { key: 'categoria.nome', header: 'Categoria' },
-      { key: 'unidade_medida', header: 'Unidade'},
-      { key: 'estoque_atual', header: 'Estoque Atual'},
-      { key: 'status_estoque', header: 'Status Estoque', 
-        type: 'badge', 
-        badgeColors: {
-          'Critico': 'bg-red-100 text-red-800',
-          'Normal':  'bg-green-100 text-green-800',
-          'Excesso': 'bg-blue-100 text-blue-800',
-        }
-    }
-  ];
-
-  insumosActions: TableAction[] = [
-    { icon: 'visibility', label: 'Visualizar', event: 'view', color: 'hover:text-secondary hover:bg-secondary/5'},
-    { icon: 'edit', label: 'Editar', event: 'edit', color: 'hover:text-primary hover:bg-primary/5'},
-  ]
+  protected readonly isGestor = computed(() => this.authService.perfilUsuario() === PerfilAcesso.GESTOR);
 
   // ---
   insumos = signal<Insumo[]>([]);
@@ -49,12 +36,55 @@ export class Insumos implements OnInit, HasUnsavedChanges{
   visibleErrorForm = signal(false)
   successMessage = signal<string | null>(null);
 
-  pagination = signal<PaginationInfo>({
-    currentPage: 1,
-    totalItems: 0,
-    itemsPerPage: 5,
+  currentPage = signal<number>(1);
+  itemsPerPage = signal<number>(5);
+
+  insumosProcessados = computed(() => {
+    return this.insumos().map(insumo => {
+      const atual = Number(insumo.estoque_atual);
+      const min = Number(insumo.estoque_minimo);
+      const max = insumo.estoque_maximo ? Number(insumo.estoque_maximo) : null;
+      const maxCalculo = max ?? (min + 200);
+
+      const percentualBruto = maxCalculo > 0 ? (atual / maxCalculo) * 100 : 0;
+      const percentual = Math.min(Math.round(percentualBruto), 100);
+
+      let status = 'estavel';
+      if (atual <= min) {
+        status = 'critico';
+      } else if (atual <= min * 1.1) {
+        status = 'atencao';
+      } else if (atual >= maxCalculo * 0.95) {
+        status = 'limite_proximo';
+      }
+
+      return {
+        ...insumo,
+        categoria: insumo.categoria?.nome || 'Sem Categoria',
+        percentual,
+        status,
+      };
+    });
   });
 
+  totalItems = computed(() => this.insumosProcessados()?.length || 0);
+
+  paginatedInsumos = computed(() => {
+    const insumos = this.insumosProcessados() || [];
+    const start = (this.currentPage() - 1) * this.itemsPerPage();
+    const end = start + this.itemsPerPage();
+    return insumos.slice(start, end);
+  });
+
+  columns: TableColumn[] = [
+    { key: 'insumo', header: 'Insumo', type: 'custom' },
+    { key: 'categoria', header: 'Categoria', type: 'custom' },
+    { key: 'estoque_atual', header: 'Estoque Atual', type: 'custom' },
+    { key: 'estoque_minimo', header: 'Estoque Mínimo' },
+    { key: 'estoque_maximo', header: 'Estoque Máximo' },
+    { key: 'status', header: 'Status Estoque', type: 'custom' },
+    { key: 'acoes', header: 'Ações', type: 'custom' }
+  ];
   // ---
   showModal = signal(false);
   editId = signal<string | null>(null);
@@ -64,6 +94,27 @@ export class Insumos implements OnInit, HasUnsavedChanges{
   filtroBusca = signal('');
   filtroCategoria = signal('');
   filtroStatus = signal('');
+
+  getStatusClass(status: string): string {
+    const map: { [key: string]: string } = { // <--- Adicionada a assinatura de índice
+      'critico': 'bg-error text-error',
+      'atencao': 'bg-warning text-warning',
+      'limite_proximo': 'bg-info text-info',
+      'estavel': 'bg-success text-success'
+    };
+    return map[status] || 'bg-tertiary text-tertiary';
+  }
+
+  getLabel(insumo: any): string {  
+      const labels: { [key: string]: string } = {
+        'critico': 'Crítico',
+        'atencao': 'Atenção',
+        'limite_proximo': 'Nível Alto',
+        'estavel': 'Estável'
+      };
+      
+      return `${labels[insumo.status] || 'Estoque'}: ${insumo.percentual} %`;
+  }
 
   // Formulario
   form = new FormGroup({
@@ -75,14 +126,6 @@ export class Insumos implements OnInit, HasUnsavedChanges{
     estoque_minimo: new FormControl(0, [Validators.required, Validators.min(1)]),
     estoque_maximo: new FormControl(0, null),
     localizacao: new FormControl('', null),
-  })
-
-  // Add string status em insumos
-  insumosComStatus = computed(() => {
-    return this.insumos().map(insumo => ({
-      ...insumo,
-      status_estoque: this.transformarStatus(insumo)
-    }));
   })
 
   // -----
@@ -106,7 +149,6 @@ export class Insumos implements OnInit, HasUnsavedChanges{
       next: (insumos) => {
         this.limparMensagens();
         this.insumos.set(insumos);
-        this.pagination.update(p => ({ ...p, totalItems: insumos.length}));
         this.loading.set(false);
       },
       error: (err) => {
@@ -128,7 +170,6 @@ export class Insumos implements OnInit, HasUnsavedChanges{
     this.insumoService.findAll().subscribe({
       next: (insumos) => {
         this.insumos.set(insumos);
-        this.pagination.update(p => ({ ...p, totalItems: insumos.length}));
         this.loading.set(false);
       },
       error: (err) => {
@@ -242,12 +283,6 @@ export class Insumos implements OnInit, HasUnsavedChanges{
     return this.form.dirty && this.showModal();
   }
 
-  private transformarStatus(insumo: Insumo): string {
-    if (insumo.status_estoque === 'critico') return 'Critico';
-    if (insumo.status_estoque === 'excesso') return 'Excesso';
-    return 'Normal';
-  }
-
   private limparMensagens(): void {
     this.error.set(null);
     this.successMessage.set(null);
@@ -267,19 +302,63 @@ export class Insumos implements OnInit, HasUnsavedChanges{
   onAction(event: { event: string, item: any}): void {
     switch (event.event) {
       case 'view':
-        console.log('ir para a pagina de visualizar o insumo')
+        this.router.navigate(['/app/insumos', event.item.id]);
         break;
       case 'edit':
-        this.onOpenEdit(event.item)
-        console.log('abrir forms de edicao de insumo', event.item)
+        this.onOpenEdit(event.item);
         break;
     }
   }
 
   
-  onPageChange(page: number): void {
-    this.pagination.update(p => ({ ...p, currentPage: page }));
-    console.log('Ir para página:', page);
+  onTableAction(event: string, insumo: any): void {
+    switch (event) {
+      case 'view':
+        this.router.navigate(['/app/insumos', insumo.id]);
+        break;
+      case 'edit':
+        if (this.isGestor()) return;
+        this.onOpenEdit(insumo);
+        break;
+      case 'deactivate':
+        if (this.isGestor()) return;
+        if (confirm(`Deseja realmente desativar o insumo "${insumo.nome}"? Ele não estará mais disponível para novas movimentações.`)) {
+          this.loading.set(true);
+          this.insumoService.delete(insumo.id).subscribe({
+            next: () => {
+              this.successMessage.set('Insumo desativado com sucesso!');
+              this.carregarInsumos();
+            },
+            error: (err) => {
+              this.tratarErro(err, 'desativar');
+              this.loading.set(false);
+            }
+          });
+        }
+        break;
+      case 'reactivate':
+        if (this.isGestor()) return;
+        if (confirm(`Deseja realmente reativar o insumo "${insumo.nome}"?`)) {
+          this.loading.set(true);
+          this.insumoService.update(insumo.id, { ativo: true }).subscribe({
+            next: () => {
+              this.successMessage.set('Insumo reativado com sucesso!');
+              this.carregarInsumos();
+            },
+            error: (err) => {
+              this.tratarErro(err, 'reativar');
+              this.loading.set(false);
+            }
+          });
+        }
+        break;
+    }
+  }
+
+  onPageChange(page: number | string) {
+    if (typeof page === 'number') {
+      this.currentPage.set(page);
+    }
   }
 
 }

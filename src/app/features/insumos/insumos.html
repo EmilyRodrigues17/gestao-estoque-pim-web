@@ -1,10 +1,11 @@
 <div class="p-8 max-w-7x1 mx-auto w-full space-y-8">
   <div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
     <div>
-      <h1 class="text-3xl font-extrabold tracking-tight text-on-surface font-headline uppercase">Catálogo de Insumos</h1>
-      <p class="text-on-surface-variant mt-1 font-body">Gerenciamento centralizado de materiais e matérias-primas industriais.</p>
+      <h2 class="text-[2.75rem] font-bold font-headline text-primary leading-tight tracking-tight">Catálogo de Insumos</h2>
+      <p class="text-on-surface-variant font-medium mt-1">Gerenciamento centralizado de materiais e matérias-primas industriais.</p>
     </div>
   
+    @if (!isGestor()) {
     <button
       (click)="onOpenCreate()"
       type="button"
@@ -12,6 +13,7 @@
       <span class="material-symbols-outlined">add</span>
       <span>Novo Insumo</span>
     </button>
+    }
 
   </div>
 
@@ -75,8 +77,9 @@
           class="w-full bg-surface-container-high border-b-2 border-transparent focus:border-primary px-4 py-3 rounded-lg text-sm transition-all outline-none appearance-none">
           <option value="">Todos os Status</option>
           <option value="critico">Critico</option>
-          <option value="normal">Normal</option>
-          <option value="excesso">Excesso</option>
+          <option value="atencao">Em Atenção</option>
+          <option value="estavel">Estável</option>
+          <option value="limite_proximo">Limite Max Proximo</option>
         </select>
       </div>
 
@@ -91,26 +94,89 @@
     </div>
   </section>
 
+  <section class="space-y-4">
+    <app-data-table
+      itemName="insumos"
+      emptyMessage="Nenhum insumo encontrado."
+      [columns]="columns"
+      [data]="paginatedInsumos()"
+      [totalItems]="totalItems()"
+      [currentPage]="currentPage()"
+      [itemsPerPage]="itemsPerPage()"
+      (pageChange)="onPageChange($event)">
 
-  <section class="bg-surface-container-lowest rounded-xl overflow-hidden">
-      @if (loading() && insumos().length === 0) {
-        <div class="bg-surface-container-lowest rounded-xl p-12 shadow-sm flex flex-col items-center gap-3">
-          <span class="material-symbols-outlined text-4xl text-primary animate-spin">progress_activity</span>
-          <p class="text-sm text-on-surface-variant">Carregando insumos...</p>
-        </div>
-      } @else {
-        <app-data-table
-          [title]="'Listagem de Insumos'"
-          [badgeText]="''"
-          [itemName]="'insumos'"
-          [columns]="columns"
-          [data]="insumosComStatus()"
-          [pagination]="pagination()"
-          [actions]="insumosActions"
-          (action)="onAction($event)"
-          (pageChange)="onPageChange($event)"
-        />
-      }
+      <ng-template #cellTemplate let-insumo let-col="col">
+        @switch (col.key) {
+          @case ('insumo') {
+            <div class="flex items-center gap-3">
+              <div [class]="insumo.estoque_atual === 0 ? 'w-10 h-10 rounded bg-error/10 flex items-center justify-center' : 'w-10 h-10 rounded bg-tertiary-fixed flex items-center justify-center'">
+                <span [class]="insumo.estoque_atual === 0 ? 'material-symbols-outlined text-error' : 'material-symbols-outlined text-tertiary'" data-icon="inventory_2">inventory_2</span>
+              </div>
+              <div>
+                <div class="flex items-center gap-2">
+                  <p class="font-bold text-on-surface" [class.opacity-50]="!insumo.ativo">{{ insumo.nome }}</p>
+                  @if (!insumo.ativo) {
+                    <span class="bg-error/10 text-error text-[8px] font-black uppercase px-1.5 py-0.5 rounded">Inativo</span>
+                  }
+                </div>
+                <p class="text-[10px] text-on-surface-variant monospace">SKU: {{ insumo.codigo }}</p>
+              </div>
+            </div>
+          }
+          @case ('categoria') {
+            <span class="text-xs px-2 py-1 bg-surface-container-high text-on-surface rounded-md">{{ insumo.categoria }}</span>
+          }
+          @case ('estoque_atual') {
+            <span [class]="insumo.estoque_atual === 0 ? 'text-lg font-extrabold text-error monospace' : 'text-lg font-extrabold text-tertiary monospace'">{{ insumo.estoque_atual }}</span>
+          }
+          @case ('status') {
+            <div class="w-full max-w-[120px]">
+              <div class="flex justify-between mb-1 text-[10px] font-bold uppercase"
+                [ngClass]="{
+                  'text-error': insumo.status === 'critico',
+                  'text-warning': insumo.status === 'atencao',
+                  'text-info': insumo.status === 'limite_proximo',
+                  'text-success': insumo.status === 'estavel'
+                }">
+                {{ getLabel(insumo) }}
+              </div>
+              <div class="h-1.5 w-full bg-surface-container rounded-full overflow-hidden">
+                <div class="h-full transition-all duration-500"
+                  [style.width.%]="insumo.percentual"
+                  [ngClass]="{
+                    'bg-error': insumo.status === 'critico',
+                    'bg-warning': insumo.status === 'atencao',
+                    'bg-info': insumo.status === 'limite_proximo',
+                    'bg-success': insumo.status === 'estavel'
+                  }">
+                </div>
+              </div>
+            </div>
+          }
+          @case ('acoes') {
+            <div class="flex items-center gap-1">
+              <button (click)="onTableAction('view', insumo)" class="p-2 rounded-lg text-on-surface-variant hover:text-secondary hover:bg-secondary/5 transition-colors" title="Visualizar">
+                <span class="material-symbols-outlined text-xl">visibility</span>
+              </button>
+              @if (!isGestor()) {
+                <button (click)="onTableAction('edit', insumo)" class="p-2 rounded-lg text-on-surface-variant hover:text-primary hover:bg-primary/5 transition-colors" title="Editar">
+                  <span class="material-symbols-outlined text-xl">edit</span>
+                </button>
+                @if (insumo.ativo) {
+                  <button (click)="onTableAction('deactivate', insumo)" class="p-2 rounded-lg text-on-surface-variant hover:text-error hover:bg-error/5 transition-colors" title="Desativar">
+                    <span class="material-symbols-outlined text-xl">block</span>
+                  </button>
+                } @else {
+                  <button (click)="onTableAction('reactivate', insumo)" class="p-2 rounded-lg text-on-surface-variant hover:text-success hover:bg-success/5 transition-colors" title="Reativar">
+                    <span class="material-symbols-outlined text-xl">check_circle</span>
+                  </button>
+                }
+              }
+            </div>
+          }
+        }
+      </ng-template>
+    </app-data-table>
   </section>
 
 </div>
