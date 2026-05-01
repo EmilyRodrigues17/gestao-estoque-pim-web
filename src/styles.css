@@ -43,6 +43,18 @@
     --color-on-error: #ffffff;
     --color-on-error-container: #93000a;
 
+    /* ── Warning ── */
+    --color-warning: #b38808;
+    --color-on-warning: #ffffff;
+
+    /* ── Info ── */
+    --color-info: #0284c7;
+    --color-on-info: #ffffff;
+
+    /* ── Success ── */
+    --color-success: #16a34a;
+    --color-on-success: #ffffff;
+
     /* ── Surface & Background ── */
     --color-surface: #fbf9f8;
     --color-surface-dim: #dcd9d9;
