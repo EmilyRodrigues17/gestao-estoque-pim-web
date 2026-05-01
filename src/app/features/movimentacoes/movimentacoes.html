@@ -1,4 +1,121 @@
-<div>
-  <h2 class="text-2xl font-bold text-slate-800 mb-4">Movimentacoes</h2>
-  <p class="text-slate-600">Aqui será exibido a tabela de movimentacoes.</p>
+<div class="p-8 max-w-7x1 mx-auto w-full space-y-8">
+  <div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
+    <div>
+    <h2 class="text-[2.75rem] font-bold font-headline text-primary leading-tight tracking-tight">Histórico de Movimentações</h2>
+    <p class="text-on-surface-variant font-medium mt-1">Registro completo de fluxo de materiais e insumos industriais.</p>
+    </div>
+    @if (!isGestor()) {
+    <div class="flex gap-2">
+    <button 
+      (click)="onOpenCreate()"
+      type="button"
+      class="bg-gradient-to-br from-primary to-primary-container text-white px-6 py-2.5 rounded-md font-bold text-sm flex items-center gap-2 shadow-sm hover:opacity-90 transition-opacity">
+    <span class="material-symbols-outlined text-lg">add</span>
+        Nova Movimentação
+    </button>
+  </div>
+    }
+  </div>
+  
+
+  <section class="grid grid-cols-1 md:grid-cols-4 gap-4">
+    <div class="col-span-1 md:col-span-1 bg-surface-container-lowest p-5 rounded-xl transition-all border-l-4 border-secondary shadow-[0_4px_20px_-10px_rgba(0,0,0,0.05)]">
+      <label class="block text-[10px] uppercase tracking-wider font-bold text-slate-500 mb-2">Período</label>
+      <div class="flex items-center gap-2 text-on-surface">
+        
+        <input class="bg-transparent border-none p-0 text-sm font-semibold focus:ring-0 w-auto cursor-pointer"
+               type="date"
+               [(ngModel)]="filtroDataInicio"
+               (ngModelChange)="onFiltroTipoChange()"
+               placeholder="Data início"/>
+        <span class="text-slate-400 text-xs font-bold"> — </span>
+        <input class="bg-transparent border-none p-0 text-sm font-semibold focus:ring-0 w-auto cursor-pointer"
+               type="date"
+               [(ngModel)]="filtroDataFim"
+               (ngModelChange)="onFiltroTipoChange()"
+               placeholder="Data fim"/>
+      </div>
+    </div>
+
+    <div class="col-span-1 md:col-span-1 bg-surface-container-lowest p-5 rounded-xl transition-all border-l-4 border-secondary shadow-[0_4px_20px_-10px_rgba(0,0,0,0.05)]">
+      <label class="block text-[10px] uppercase tracking-wider font-bold text-slate-500 mb-2">Insumo</label>
+      <select class="bg-transparent border-none p-0 text-sm font-semibold focus:ring-0 w-full appearance-none"
+        [(ngModel)]="filtroInsumoId"
+        (ngModelChange)="onFiltroTipoChange()"
+        >
+        <option value="">Todos os Insumos</option>
+        @for (insumo of insumos(); track insumo.id){
+          <option [value]="insumo.id">{{ insumo.nome }}</option>
+        }
+      </select>
+    </div>
+
+    <div class="col-span-1 md:col-span-1 bg-surface-container-lowest p-5 rounded-xl transition-all border-l-4 border-secondary shadow-[0_4px_20px_-10px_rgba(0,0,0,0.05)]">
+      <label class="block text-[10px] uppercase tracking-wider font-bold text-slate-500 mb-2">Tipo</label>
+      <select class="bg-transparent border-none p-0 text-sm font-semibold focus:ring-0 w-full appearance-none"
+              [(ngModel)]="filtroTipo"
+              (ngModelChange)="onFiltroTipoChange()">
+        <option value="">Entrada &amp; Saída</option>
+        <option value="entrada">Apenas Entradas</option>
+        <option value="saida">Apenas Saídas</option>
+      </select>
+    </div>
+
+    <div class="col-span-1 md:col-span-1 bg-surface-container-lowest p-5 rounded-xl transition-all border-l-4 border-secondary shadow-[0_4px_20px_-10px_rgba(0,0,0,0.05)]">
+      <label class="block text-[10px] uppercase tracking-wider font-bold text-slate-500 mb-2">Motivo</label>
+      <select class="bg-transparent border-none p-0 text-sm font-semibold focus:ring-0 w-full appearance-none"
+        [(ngModel)]="filtroMotivo"
+        (ngModelChange)="onFiltroTipoChange()">
+        <option value="">Todos os Motivos</option>
+        <option value="compra">Compra</option>
+        <option value="devolucao">Devolução</option>
+        <option value="consumo">Consumo</option>
+        <option value="perda">Perda</option>
+        <option value="ajuste">Ajuste</option>
+      </select>
+    </div>
+  </section>
+
+  <section>
+    <app-data-table
+      itemName="movimentações"
+      emptyMessage="Nenhuma movimentação encontrada."
+      [columns]="columns"
+      [data]="paginatedMovimentacoes()"
+      [totalItems]="totalItems()"
+      [currentPage]="currentPage()"
+      [itemsPerPage]="itemsPerPage()"
+      (pageChange)="onPageChange($event)">
+
+      <ng-template #cellTemplate let-movimentacao let-col="col">
+        @switch (col.key) {
+          @case ('insumo') {
+            <span class="text-sm text-on-surface-variant">{{ movimentacao.insumo?.nome }}</span>
+          }
+          @case ('tipo') {
+            @if (movimentacao.tipo === '+Entrada') {
+              <span class="inline-flex items-center gap-1 text-primary-container text-[10px] font-black uppercase px-2 py-0.5 rounded-full bg-primary-fixed">
+                <span class="material-symbols-outlined text-[12px]">add</span> Entrada
+              </span>
+            } @else {
+              <span class="inline-flex items-center gap-1 text-tertiary text-[10px] font-black uppercase px-2 py-0.5 rounded-full bg-tertiary-fixed">
+                <span class="material-symbols-outlined text-[12px]">remove</span> Saída
+              </span>
+            }
+          }
+          @case ('quantidade') {
+            <span class="text-sm font-medium text-on-surface-variant monospace">{{ movimentacao.quantidade }}</span>
+          }
+          @case ('saldo_apos') {
+            <span [class]="movimentacao.saldo_apos === 0 ? 'text-lg font-extrabold text-error monospace' : 'text-lg font-extrabold text-tertiary monospace'">{{ movimentacao.saldo_apos }}</span>
+          }
+          @case ('linha_destino') {
+            <span class="text-sm text-on-surface-variant">{{ movimentacao.linha_destino || '-' }}</span>
+          }
+        }
+      </ng-template>
+    </app-data-table>
+  </section>
+
+
 </div>
