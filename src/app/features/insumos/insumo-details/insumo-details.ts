@@ -192,8 +192,8 @@ export class InsumoDetails implements OnInit {
   
     const dados = this.form.getRawValue();
 
-    const userEmail = this.authService.usuario()?.email;
-    if (!userEmail) {
+    const userNome = this.authService.usuario()?.nome;
+    if (!userNome) {
        this.error.set('Erro: Usuário não autenticado.');
        return;
     }
@@ -205,7 +205,7 @@ export class InsumoDetails implements OnInit {
       quantidade: Number(dados.quantidade),
       linha_destino: dados.linha_destino || null,
       observacao: dados.observacao || null,
-      registrado_por: userEmail,
+      registrado_por: userNome,
     };
 
     this.MovimentacaoService.create(payload).subscribe({
