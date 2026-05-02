@@ -39,38 +39,10 @@ export class Insumos implements OnInit, HasUnsavedChanges{
   currentPage = signal<number>(1);
   itemsPerPage = signal<number>(5);
 
-  insumosProcessados = computed(() => {
-    return this.insumos().map(insumo => {
-      const atual = Number(insumo.estoque_atual);
-      const min = Number(insumo.estoque_minimo);
-      const max = insumo.estoque_maximo ? Number(insumo.estoque_maximo) : null;
-      const maxCalculo = max ?? (min + 200);
-
-      const percentualBruto = maxCalculo > 0 ? (atual / maxCalculo) * 100 : 0;
-      const percentual = Math.min(Math.round(percentualBruto), 100);
-
-      let status = 'estavel';
-      if (atual <= min) {
-        status = 'critico';
-      } else if (atual <= min * 1.1) {
-        status = 'atencao';
-      } else if (atual >= maxCalculo * 0.95) {
-        status = 'limite_proximo';
-      }
-
-      return {
-        ...insumo,
-        categoria: insumo.categoria?.nome || 'Sem Categoria',
-        percentual,
-        status,
-      };
-    });
-  });
-
-  totalItems = computed(() => this.insumosProcessados()?.length || 0);
+  totalItems = computed(() => this.insumos()?.length || 0);
 
   paginatedInsumos = computed(() => {
-    const insumos = this.insumosProcessados() || [];
+    const insumos = this.insumos() || [];
     const start = (this.currentPage() - 1) * this.itemsPerPage();
     const end = start + this.itemsPerPage();
     return insumos.slice(start, end);
@@ -82,7 +54,7 @@ export class Insumos implements OnInit, HasUnsavedChanges{
     { key: 'estoque_atual', header: 'Estoque Atual', type: 'custom' },
     { key: 'estoque_minimo', header: 'Estoque Mínimo' },
     { key: 'estoque_maximo', header: 'Estoque Máximo' },
-    { key: 'status', header: 'Status Estoque', type: 'custom' },
+    { key: 'status_estoque', header: 'Status Estoque', type: 'custom' },
     { key: 'acoes', header: 'Ações', type: 'custom' }
   ];
   // ---
@@ -90,13 +62,13 @@ export class Insumos implements OnInit, HasUnsavedChanges{
   editId = signal<string | null>(null);
 
   // ---
-  filtroAtivo = signal(false);
-  filtroBusca = signal('');
-  filtroCategoria = signal('');
-  filtroStatus = signal('');
+  filtroAtivo = '';
+  filtroBusca = '';
+  filtroCategoria ='';
+  filtroStatus = '';
 
   getStatusClass(status: string): string {
-    const map: { [key: string]: string } = { // <--- Adicionada a assinatura de índice
+    const map: { [key: string]: string } = {
       'critico': 'bg-error text-error',
       'atencao': 'bg-warning text-warning',
       'limite_proximo': 'bg-info text-info',
@@ -113,7 +85,7 @@ export class Insumos implements OnInit, HasUnsavedChanges{
         'estavel': 'Estável'
       };
       
-      return `${labels[insumo.status] || 'Estoque'}: ${insumo.percentual} %`;
+      return `${labels[insumo.status_estoque] || 'Estoque'}: ${insumo.percentual} %`;
   }
 
   // Formulario
@@ -134,48 +106,47 @@ export class Insumos implements OnInit, HasUnsavedChanges{
     this.carregarCategorias();
   }
 
-  // -----
-  carregarFiltrosInsumos(): void {
-    this.loading.set(true);
+  // ----
+  carregarInsumos(): void {
+    const filtros: { nome?: string, codigo?: string, categoriaId?: string, statusEstoque?: string } = {};
 
-    const filtros = {
-      nome: this.filtroBusca().toLocaleLowerCase().trim(),
-      codigo: this.filtroBusca().trim(),
-      categoriaId: this.filtroCategoria(),
-      statusEstoque: this.filtroStatus(),
-    }
+    if (this.filtroBusca) filtros.nome = this.filtroBusca.toLocaleLowerCase().trim();
+    if (this.filtroBusca) filtros.codigo = this.filtroBusca.trim();
+    if (this.filtroCategoria) filtros.categoriaId = this.filtroCategoria;
+    if (this.filtroStatus) filtros.statusEstoque = this.filtroStatus;
+
+    this.loading.set(true);
 
     this.insumoService.findAll(filtros).subscribe({
       next: (insumos) => {
         this.limparMensagens();
-        this.insumos.set(insumos);
-        this.loading.set(false);
-      },
-      error: (err) => {
-        if (err.status === 404){
-          this.insumos.set([]);
-          this.loading.set(false)
-          return
-        }
-        this.error.set('Erro ao carregar insumos.');
-        this.loading.set(false);
-        console.log('Erro ao carregar insumos: ', err);
-      }
-    })
-  }
 
-  // ----
-  carregarInsumos(): void {
-    this.loading.set(true);
-    this.insumoService.findAll().subscribe({
-      next: (insumos) => {
-        this.insumos.set(insumos);
+        const insumosEditados = insumos.map(insumo => {
+          const atual = Number(insumo.estoque_atual);
+          const min = Number(insumo.estoque_minimo);
+          const max = insumo.estoque_maximo ? Number(insumo.estoque_maximo) : null;
+          const maxCalculo = max ?? (min + 200);
+
+          const percentualBruto = maxCalculo > 0 ? (atual / maxCalculo) * 100 : 0;
+          const percentual = Math.min(Math.round(percentualBruto), 100);
+
+          const nomeCategoria = insumo.categoria.nome
+
+          return {
+            ...insumo,
+            categoria: {nome: nomeCategoria},
+            percentual
+          }
+
+        });
+
+        this.insumos.set(insumosEditados);
+        this.currentPage.set(1);
         this.loading.set(false);
       },
       error: (err) => {
         this.error.set('Erro ao carregar listagem de insumos.');
         this.loading.set(false);
-        console.log('Erro ao carregar listagem de insumos: ', err);
       }
     })
   }
@@ -202,7 +173,7 @@ export class Insumos implements OnInit, HasUnsavedChanges{
 
   onOpenEdit(insumo: any): void {
     this.editId.set(insumo.id);
-    console.log(insumo)
+
     this.form.patchValue({
       codigo: insumo.codigo,
       nome: insumo.nome,
@@ -340,6 +311,10 @@ export class Insumos implements OnInit, HasUnsavedChanges{
         }
         break;
     }
+  }
+
+  onFiltroTipoChange(): void {
+    this.carregarInsumos();
   }
 
   onPageChange(page: number | string) {

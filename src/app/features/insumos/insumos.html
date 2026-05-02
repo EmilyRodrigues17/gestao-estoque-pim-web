@@ -49,7 +49,7 @@
             <span class="material-symbols-outlined">search</span>
           </span>
           <input
-            [(ngModel)]="filtroBusca" name="filtroBusca"
+            [(ngModel)]="filtroBusca" (ngModelChange)="onFiltroTipoChange()"
             class="w-full bg-surface-container-high border-b-2 border-transparent focus:border-primary px-12 py-3 rounded-lg text-sm transition-all outline-none" 
             placeholder="Ex: Aço Inoxidável 304 ou INS-001..." 
             type="text"/>
@@ -61,7 +61,7 @@
           Categoria
         </label>
         <select 
-          [(ngModel)]="filtroCategoria" name="filtroCategoria"
+          [(ngModel)]="filtroCategoria" (ngModelChange)="onFiltroTipoChange()"
           class="w-full bg-surface-container-high border-b-2 border-transparent focus:border-primary px-4 py-3 rounded-lg text-sm transition-all outline-none appearance-none">
           <option value="">Todas as Categorias</option>
           @for (categoria of categorias(); track categoria.id){
@@ -73,7 +73,7 @@
       <div class="md:col-span-2 space-y-1.5">
         <label class="text-[10px] uppercase font-bold tracking-widest text-on-surface-variant ml-1">Status de Estoque</label>
         <select
-          [(ngModel)]="filtroStatus" name="filtroStatus" 
+          [(ngModel)]="filtroStatus" (ngModelChange)="onFiltroTipoChange()"
           class="w-full bg-surface-container-high border-b-2 border-transparent focus:border-primary px-4 py-3 rounded-lg text-sm transition-all outline-none appearance-none">
           <option value="">Todos os Status</option>
           <option value="critico">Critico</option>
@@ -83,14 +83,6 @@
         </select>
       </div>
 
-      <div class="md:col-span-1 flex items-end">
-        <button 
-          (click)="carregarFiltrosInsumos()"
-          class="w-full bg-primary hover:bg-primary-container text-on-primary py-3 rounded-lg flex items-center justify-center transition-all shadow-sm active:scale-95">
-          <span class="material-symbols-outlined">search</span>
-          <span class="md:hidden ml-2 font-bold uppercase text-[10px] tracking-widest">Buscar</span>
-        </button>
-      </div>
     </div>
   </section>
 
@@ -124,19 +116,19 @@
             </div>
           }
           @case ('categoria') {
-            <span class="text-xs px-2 py-1 bg-surface-container-high text-on-surface rounded-md">{{ insumo.categoria }}</span>
+            <span class="text-xs px-2 py-1 bg-surface-container-high text-on-surface rounded-md">{{ insumo.categoria.nome }}</span>
           }
           @case ('estoque_atual') {
             <span [class]="insumo.estoque_atual === 0 ? 'text-lg font-extrabold text-error monospace' : 'text-lg font-extrabold text-tertiary monospace'">{{ insumo.estoque_atual }}</span>
           }
-          @case ('status') {
+          @case ('status_estoque') {
             <div class="w-full max-w-[120px]">
               <div class="flex justify-between mb-1 text-[10px] font-bold uppercase"
                 [ngClass]="{
-                  'text-error': insumo.status === 'critico',
-                  'text-warning': insumo.status === 'atencao',
-                  'text-info': insumo.status === 'limite_proximo',
-                  'text-success': insumo.status === 'estavel'
+                  'text-error': insumo.status_estoque === 'critico',
+                  'text-warning': insumo.status_estoque === 'atencao',
+                  'text-info': insumo.status_estoque === 'limite_proximo',
+                  'text-success': insumo.status_estoque === 'estavel'
                 }">
                 {{ getLabel(insumo) }}
               </div>
@@ -144,10 +136,10 @@
                 <div class="h-full transition-all duration-500"
                   [style.width.%]="insumo.percentual"
                   [ngClass]="{
-                    'bg-error': insumo.status === 'critico',
-                    'bg-warning': insumo.status === 'atencao',
-                    'bg-info': insumo.status === 'limite_proximo',
-                    'bg-success': insumo.status === 'estavel'
+                    'bg-error': insumo.status_estoque === 'critico',
+                    'bg-warning': insumo.status_estoque === 'atencao',
+                    'bg-info': insumo.status_estoque === 'limite_proximo',
+                    'bg-success': insumo.status_estoque === 'estavel'
                   }">
                 </div>
               </div>
