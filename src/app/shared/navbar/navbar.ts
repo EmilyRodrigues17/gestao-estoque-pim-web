@@ -18,11 +18,12 @@ export class Navbar {
   private static readonly ROUTE_TITLES: Record<string, string> = {
     '/app/dashboard': 'Dashboard de Alertas',
     '/app/categorias': 'Gestão de Categorias',
+    '/app/insumos': 'Catálogo de Insumos',
+    '/app/movimentacoes': 'Histórico de Movimentações',
+    '/app/usuarios': 'Gestão de Usuários'
   };
 
   private static readonly HIDDEN_ROUTES: string[] = [
-    '/app/insumos',
-    '/app/movimentacoes',
   ];
 
 

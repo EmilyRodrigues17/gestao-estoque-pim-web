@@ -5,14 +5,15 @@
     <div
       class="bg-surface-container-lowest rounded-xl p-5 border-l-4 border-tertiary flex flex-col justify-between h-32">
       <div class="flex justify-between items-start">
-        <span class="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">Abaixo do Mínimo</span>
+        <span class="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">Críticos</span>
         <span class="material-symbols-outlined text-tertiary" data-icon="warning">warning</span>
       </div>
       <div class="flex items-baseline gap-2">
         <span class="text-3xl font-extrabold text-on-surface monospace">{{ dashboardData()?.totalInsumosAbaixoMinimo ||
           0 }}</span>
-        <span class="text-xs text-tertiary font-medium">Requerem atenção</span>
+        
       </div>
+      <span class="text-xs text-tertiary font-medium">Itens abaixo do estoque mínimo</span>
     </div>
     <!-- Zerados -->
     <div class="bg-surface-container-lowest rounded-xl p-5 border-l-4 border-error flex flex-col justify-between h-32">
@@ -23,8 +24,8 @@
       <div class="flex items-baseline gap-2">
         <span class="text-3xl font-extrabold text-on-surface monospace">{{ dashboardData()?.totalInsumosZerados || 0
           }}</span>
-        <span class="text-xs text-error font-medium">Ação imediata</span>
       </div>
+      <span class="text-xs text-error font-medium">Ação imediata</span>
     </div>
     <!-- Movimentações Hoje -->
     <div
@@ -36,8 +37,8 @@
       <div class="flex items-baseline gap-2">
         <span class="text-3xl font-extrabold text-on-surface monospace">{{ dashboardData()?.movimentacoesHoje || 0
           }}</span>
-        <span class="text-xs text-secondary font-medium">Hoje</span>
       </div>
+      <span class="text-xs text-secondary font-medium">Entradas e saídas registradas</span>
     </div>
     <!-- Total Unidades -->
     <div
@@ -49,15 +50,15 @@
       <div class="flex items-baseline gap-2">
         <span class="text-3xl font-extrabold text-on-surface monospace">{{ dashboardData()?.totalUnidadesEstoque || 0
           }}</span>
-        <span class="text-xs text-on-surface-variant font-medium">Estoque Geral</span>
       </div>
+      <span class="text-xs text-on-surface-variant font-medium">Estoque Geral</span>
     </div>
   </section>
   <!-- Main Content: Tabela Insumos Críticos -->
   <section class="space-y-4">
     <div class="flex items-end justify-between px-2">
       <div>
-        <h3 class="text-2xl font-bold text-primary tracking-tight">Insumos Críticos</h3>
+        <h3 class="text-2xl font-bold text-on-surface tracking-tight">Insumos Críticos</h3>
         <p class="text-sm text-on-surface-variant">Itens requerendo reposição imediata baseados no nível de estoque de
           segurança.</p>
       </div>
