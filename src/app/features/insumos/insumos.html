@@ -83,6 +83,17 @@
         </select>
       </div>
 
+      <div class="md:col-span-2 space-y-1.5">
+        <label class="text-[10px] uppercase font-bold tracking-widest text-on-surface-variant ml-1">Status do Insumo</label>
+        <select
+          [(ngModel)]="filtroAtivo" (ngModelChange)="onFiltroTipoChange()"
+          class="w-full bg-surface-container-high border-b-2 border-transparent focus:border-primary px-4 py-3 rounded-lg text-sm transition-all outline-none appearance-none">
+          <option value="">Todos os Status</option>
+          <option value="ativo">Ativo</option>
+          <option value="desativado">Desativado</option>
+        </select>
+      </div>
+
     </div>
   </section>
 
@@ -147,8 +158,8 @@
           }
           @case ('acoes') {
             <div class="flex items-center gap-1">
-              <button (click)="onTableAction('view', insumo)" class="p-2 rounded-lg text-on-surface-variant hover:text-secondary hover:bg-secondary/5 transition-colors" title="Visualizar">
-                <span class="material-symbols-outlined text-xl">visibility</span>
+              <button (click)="onTableAction('search', insumo)" class="p-2 rounded-lg text-on-surface-variant hover:text-secondary hover:bg-secondary/5 transition-colors" title="Visualizar">
+                <span class="material-symbols-outlined text-xl">search</span>
               </button>
               @if (!isGestor()) {
                 <button (click)="onTableAction('edit', insumo)" class="p-2 rounded-lg text-on-surface-variant hover:text-primary hover:bg-primary/5 transition-colors" title="Editar">

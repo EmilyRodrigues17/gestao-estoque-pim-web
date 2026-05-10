@@ -271,7 +271,7 @@ export class Insumos implements OnInit, HasUnsavedChanges{
   
   onTableAction(event: string, insumo: any): void {
     switch (event) {
-      case 'view':
+      case 'search':
         this.router.navigate(['/app/insumos', insumo.id]);
         break;
       case 'edit':

@@ -80,7 +80,7 @@ export class Dashboard implements OnInit{
   }
 
   onTableAction(action: string, insumo: InsumoCritico): void {
-    if (action === 'view') {
+    if (action === 'search') {
       this.router.navigate(['/app/insumos', insumo.id]);
     }
   }
