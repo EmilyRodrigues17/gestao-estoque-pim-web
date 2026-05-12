@@ -108,12 +108,13 @@ export class Insumos implements OnInit, HasUnsavedChanges{
 
   // ----
   carregarInsumos(): void {
-    const filtros: { nome?: string, codigo?: string, categoriaId?: string, statusEstoque?: string } = {};
+    const filtros: { nome?: string, codigo?: string, categoriaId?: string, statusEstoque?: string, insumoAtivo?: string } = {};
 
     if (this.filtroBusca) filtros.nome = this.filtroBusca.toLocaleLowerCase().trim();
     if (this.filtroBusca) filtros.codigo = this.filtroBusca.trim();
     if (this.filtroCategoria) filtros.categoriaId = this.filtroCategoria;
     if (this.filtroStatus) filtros.statusEstoque = this.filtroStatus;
+    if (this.filtroAtivo) filtros.insumoAtivo = this.filtroAtivo
 
     this.loading.set(true);
 
@@ -145,8 +146,12 @@ export class Insumos implements OnInit, HasUnsavedChanges{
         this.loading.set(false);
       },
       error: (err) => {
-        this.error.set('Erro ao carregar listagem de insumos.');
-        this.loading.set(false);
+        if (err.status === 404){
+          this.insumos.set([]);
+          this.loading.set(false);
+          return
+        }
+        console.log('Erro ao carregar listagem de insumos.', err)
       }
     })
   }

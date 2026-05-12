@@ -1,21 +1,4 @@
 <div class="p-8 max-w-7x1 mx-auto w-full space-y-8">
-  <div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
-    <div>
-      <h2 class="text-[2.75rem] font-bold font-headline text-primary leading-tight tracking-tight">Catálogo de Insumos</h2>
-      <p class="text-on-surface-variant font-medium mt-1">Gerenciamento centralizado de materiais e matérias-primas industriais.</p>
-    </div>
-  
-    @if (!isGestor()) {
-    <button
-      (click)="onOpenCreate()"
-      type="button"
-      class="bg-gradient-to-br from-primary to-primary-container text-on-primary px-6 py-2.5 rounded-lg font-semibold flex items-center gap-2 shadow-lg shadow-primary/20 active:scale-95 transition-all">
-      <span class="material-symbols-outlined">add</span>
-      <span>Novo Insumo</span>
-    </button>
-    }
-
-  </div>
 
   <!-- Mensagens de Feedback -->
   @if (error() && !visibleErrorForm()) {
@@ -38,9 +21,9 @@
   }
 
   <!-- Area de pesquisa -->
-  <section class="bg-surface-container-low rounded-xl p-6 space-y-6">
-    <div class="grid grid-cols-1 md:grid-cols-12 gap-6">
-      <div class="md:col-span-6 space-y-1.5">
+  <section class="flex flex-col md:flex-row md:items-end justify-between gap-6">
+    <div class="flex-1 grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
+      <div class="md:col-span-3 space-y-1.5">
         <label class="text-[10px] uppercase font-bold tracking-widest text-on-surface-variant ml-1">
           Buscar por Nome ou Código
         </label>
@@ -93,9 +76,23 @@
           <option value="desativado">Desativado</option>
         </select>
       </div>
+      
+      <div class="md:col-span-2 flex items-end">
+  
+          @if (!isGestor()) {
+          <button
+            (click)="onOpenCreate()"
+            type="button"
+            class="bg-gradient-to-br from-primary to-primary-container text-on-primary px-6 py-2.5 rounded-lg font-semibold flex items-center gap-2 shadow-lg shadow-primary/20 active:scale-95 transition-all">
+            <span class="material-symbols-outlined">add</span>
+            <span>Novo Insumo</span>
+          </button>
+          }
 
+      </div>
     </div>
   </section>
+  
 
   <section class="space-y-4">
     <app-data-table

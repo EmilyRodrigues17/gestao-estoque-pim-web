@@ -11,7 +11,7 @@ export class InsumoService {
     private http = inject(HttpClient);
     private baseUrl = `${environment.apiUrl}/insumos`;
 
-    findAll(filtros?: { nome?: string; codigo?: string; categoriaId?: string, statusEstoque?: string }): Observable<Insumo[]> {
+    findAll(filtros?: { nome?: string; codigo?: string; categoriaId?: string, statusEstoque?: string, insumoAtivo?: string }): Observable<Insumo[]> {
         let params = new HttpParams();
         if (filtros?.nome) {
             params = params.set('nome', filtros.nome);
@@ -24,6 +24,9 @@ export class InsumoService {
         }
         if (filtros?.statusEstoque) {
             params = params.set('statusEstoque', filtros.statusEstoque);
+        }
+        if (filtros?.insumoAtivo) {
+            params = params.set('insumoAtivo', filtros.insumoAtivo === 'ativo' ? true : false );
         }
 
         return this.http.get<Insumo[]>(this.baseUrl, { params });
