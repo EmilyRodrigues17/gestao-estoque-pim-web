@@ -50,7 +50,7 @@ export const routes: Routes = [
                 path: 'categorias',
                 loadComponent: () => import('./features/categorias/categorias').then(m => m.Categorias),
                 canActivate: [roleGuard],
-                data: { roles: ['almoxarife'] },
+                data: { roles: ['almoxarife', 'gestor'] },
             },
             {
                 path: 'usuarios',
