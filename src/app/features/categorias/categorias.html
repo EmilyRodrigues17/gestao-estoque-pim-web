@@ -21,6 +21,22 @@
 
   <div class="grid grid-cols-12 gap-8">
     <section class="col-span-12 lg:col-span-8 space-y-4">
+      <div class="space-y-1.5">
+        <label class="text-[10px] uppercase font-bold tracking-widest text-on-surface-variant ml-1">
+          Buscar por Nome
+        </label>
+        <div class="relative">
+          <span class="absolute inset-y-0 left-0 flex items-center pl-4 text-on-surface-variant">
+            <span class="material-symbols-outlined">search</span>
+          </span>
+          <input
+            [(ngModel)]="filtroBusca" (ngModelChange)="onFiltroChange()"
+            class="w-full bg-surface-container-high border-b-2 border-transparent focus:border-primary px-12 py-3 rounded-lg text-sm transition-all outline-none" 
+            placeholder="Ex: Componentes..." 
+            type="text"/>
+        </div>
+      </div>
+
       @if (loading() && categorias().length === 0) {
         <div class="bg-surface-container-lowest rounded-xl p-12 shadow-sm ring-1 ring-black/[0.02] flex flex-col items-center gap-3">
           <span class="material-symbols-outlined text-4xl text-primary animate-spin">progress_activity</span>
@@ -29,7 +45,7 @@
       } @else {
         <app-data-table
           title="Lista de Categorias"
-          [badgeText]="categorias().length + ' Cadastradas'"
+          [badgeText]="categoriasFiltradas().length + ' Cadastradas'"
           itemName="categorias"
           emptyMessage="Nenhuma categoria encontrada."
           [columns]="columns"

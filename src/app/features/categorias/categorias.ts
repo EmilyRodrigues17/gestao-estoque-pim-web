@@ -21,13 +21,22 @@ export class Categorias implements OnInit {
 
   categorias = signal<Categoria[]>([]);
 
+  filtroBusca = signal('');
+
+  categoriasFiltradas = computed(() => {
+    const busca = this.filtroBusca().toLowerCase().trim();
+    const lista = this.categorias() || [];
+    if (!busca) return lista;
+    return lista.filter(cat => cat.nome.toLowerCase().includes(busca));
+  });
+
   currentPage = signal<number>(1);
   itemsPerPage = signal<number>(5);
   
-  totalItems = computed(() => this.categorias()?.length || 0);
+  totalItems = computed(() => this.categoriasFiltradas()?.length || 0);
 
   paginatedCategorias = computed(() => {
-    const data = this.categorias() || [];
+    const data = this.categoriasFiltradas() || [];
     const start = (this.currentPage() - 1) * this.itemsPerPage();
     const end = start + this.itemsPerPage();
     return data.slice(start, end);
@@ -159,6 +168,10 @@ export class Categorias implements OnInit {
     if (typeof page === 'number') {
       this.currentPage.set(page);
     }
+  }
+
+  onFiltroChange(): void {
+    this.currentPage.set(1);
   }
 
   /** Tratamento de erros da API */
