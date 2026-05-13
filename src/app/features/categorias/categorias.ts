@@ -4,6 +4,8 @@ import { DataTable } from '../../shared/data-table/data-table';
 import { TableColumn } from '../../core/models/data-table';
 import { CategoriaService } from '../../core/services/categoria.service';
 import { Categoria } from '../../core/models/categoria';
+import { AuthService } from '../../core/auth/auth.service';
+import { PerfilAcesso } from '../../core/models/perfil-acesso';
 
 @Component({
   selector: 'app-categorias',
@@ -13,7 +15,9 @@ import { Categoria } from '../../core/models/categoria';
 })
 export class Categorias implements OnInit {
   private categoriaService = inject(CategoriaService);
+  protected authService = inject(AuthService);
 
+  protected readonly isAlmoxarife = computed(() => this.authService.perfilUsuario() === PerfilAcesso.ALMOXARIFE);
 
   categorias = signal<Categoria[]>([]);
 
