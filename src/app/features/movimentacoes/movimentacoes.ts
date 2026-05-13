@@ -34,7 +34,7 @@ export class Movimentacoes implements OnInit {
     { key: 'motivo', header: 'Motivo' },
     { key: 'quantidade', header: 'Quantidade', type: 'custom' },
     { key: 'saldo_apos', header: 'Saldo Apos', type: 'custom' },
-    { key: 'linha_destino', header: 'Origem/Destino', type: 'custom' },
+    { key: 'linha_destino', header: 'Destino', type: 'custom' },
     { key: 'registrado_por', header: 'Responsavel' }
   ];
 
