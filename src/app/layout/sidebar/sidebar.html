@@ -33,14 +33,13 @@
         Movimentações
     </a>
 
-    @if (!isGestor()) {
     <a  routerLink="/app/categorias"
         routerLinkActive="nav-link-active"
         class="nav-link">
     <span class="material-symbols-outlined" data-icon="category" style="font-variation-settings: 'FILL' 1;">category</span>
         Categorias
     </a>
-    }
+    
 
     @if (isAdm()) {
     <a  routerLink="/app/usuarios"
