@@ -1,6 +1,6 @@
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { InsumoService } from '../../../core/services/insumo.service';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 import { Insumo } from '../../../core/models/insumo';
 import { MovimentacaoService } from '../../../core/services/movimentacao.service';
 import { DataTable } from '../../../shared/data-table/data-table';
@@ -10,10 +10,11 @@ import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { AuthService } from '../../../core/auth/auth.service';
 import { PerfilAcesso } from '../../../core/models/perfil-acesso';
 import { DatePipe } from '@angular/common';
+import { MovimentacoesChart } from '../../../shared/movimentacoes-chart/movimentacoes-chart';
 
 @Component({
   selector: 'app-insumo-details',
-  imports: [DataTable, ReactiveFormsModule, RouterLink, DatePipe],
+  imports: [DataTable, ReactiveFormsModule, DatePipe, MovimentacoesChart],
   templateUrl: './insumo-details.html',
   styleUrl: './insumo-details.css',
 })
@@ -32,7 +33,7 @@ export class InsumoDetails implements OnInit {
       { key: 'motivo', header: 'Motivo' },
       { key: 'quantidade', header: 'Quantidade', type: 'custom'},
       { key: 'saldo_apos', header: 'Saldo Apos', type: 'custom'},
-      { key: 'linha_destino', header: 'Origem/Destino', type: 'custom'},
+      { key: 'linha_destino', header: 'Destino', type: 'custom'},
       { key: 'observacao', header: 'Observacao', type: 'custom'},
       { key: 'registrado_por', header: 'Responsavel'}
   ];
@@ -55,6 +56,27 @@ export class InsumoDetails implements OnInit {
     const start = (this.currentPage() - 1) * this.itemsPerPage();
     const end = start + this.itemsPerPage();
     return movimentacoes.slice(start, end);
+  });
+
+  consumoMedioPorDia = computed(() => {
+    const saidas = this.historicoMovimentacao().filter(mov => mov.tipo === 'saida');
+    if (saidas.length === 0) return 0;
+
+    const totalConsumido = saidas.reduce((acc, m) => acc + Number(m.quantidade), 0);
+
+    const timestamps = this.historicoMovimentacao().map(m => new Date(m.timestamp).getTime());
+    const maisAntiga = new Date(Math.min(...timestamps));
+    const hoje = new Date();
+    const diasAtividade = Math.max(1, Math.ceil((hoje.getTime() - maisAntiga.getTime()) / (1000 * 60 * 60 * 24)));
+
+    return Math.round((totalConsumido / diasAtividade) * 100) / 100;
+  });
+
+  diasParaZerarEstoque = computed(() => {
+    const media = this.consumoMedioPorDia();
+    const saldo = Number(this.insumo()?.estoque_atual ?? 0);
+    if (media === 0) return null;
+    return Math.floor(saldo / media);
   });
 
   showModal = signal(false);
