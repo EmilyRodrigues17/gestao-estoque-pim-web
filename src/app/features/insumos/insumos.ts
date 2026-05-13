@@ -25,7 +25,7 @@ export class Insumos implements OnInit, HasUnsavedChanges{
   
   private router = inject(Router);
 
-  protected readonly isGestor = computed(() => this.authService.perfilUsuario() === PerfilAcesso.GESTOR);
+  protected readonly isAlmoxarife = computed(() => this.authService.perfilUsuario() === PerfilAcesso.ALMOXARIFE);
 
   // ---
   insumos = signal<Insumo[]>([]);
@@ -280,11 +280,10 @@ export class Insumos implements OnInit, HasUnsavedChanges{
         this.router.navigate(['/app/insumos', insumo.id]);
         break;
       case 'edit':
-        if (this.isGestor()) return;
         this.onOpenEdit(insumo);
         break;
       case 'deactivate':
-        if (this.isGestor()) return;
+        if (this.isAlmoxarife()) return;
         if (confirm(`Deseja realmente desativar o insumo "${insumo.nome}"? Ele não estará mais disponível para novas movimentações.`)) {
           this.loading.set(true);
           this.insumoService.delete(insumo.id).subscribe({
@@ -300,7 +299,7 @@ export class Insumos implements OnInit, HasUnsavedChanges{
         }
         break;
       case 'reactivate':
-        if (this.isGestor()) return;
+        if (this.isAlmoxarife()) return;
         if (confirm(`Deseja realmente reativar o insumo "${insumo.nome}"?`)) {
           this.loading.set(true);
           this.insumoService.update(insumo.id, { ativo: true }).subscribe({
