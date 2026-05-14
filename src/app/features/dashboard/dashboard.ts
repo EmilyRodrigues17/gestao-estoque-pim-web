@@ -21,6 +21,7 @@ export class Dashboard implements OnInit{
     { key: 'categoria', header: 'Categoria', type: 'custom' },
     { key: 'estoque_atual', header: 'Estoque Atual', type: 'custom' },
     { key: 'estoque_minimo', header: 'Estoque Mínimo', type: 'custom' },
+    { key: 'estoque_maximo', header: 'Estoque Máximo', type: 'custom' },
     { key: 'status', header: 'Status Crítico', type: 'custom' },
     { key: 'acoes', header: 'Ações', type: 'custom', align: 'right' }
   ];
