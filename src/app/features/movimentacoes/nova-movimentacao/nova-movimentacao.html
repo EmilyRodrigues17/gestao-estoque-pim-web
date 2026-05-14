@@ -168,15 +168,18 @@
                         <textarea formControlName="observacao"
                             class="w-full bg-surface-container-high border-b-2 border-transparent focus:border-primary transition-all p-4 rounded-t-lg outline-none text-body-md resize-none"
                             placeholder="Detalhes técnicos ou justificativa da movimentação..." rows="4"></textarea>
+                        @if (form.get('observacao')?.invalid && form.get('observacao')?.touched) {
+                            <span class="text-red-500 text-xs mt-1">Observação é obrigatória para ajuste ou perda.</span>
+                        }
                     </div>
 
                     <div class="pt-4">
                         <button 
-                            [disabled]="loading() || !selectedInsumo() || form.invalid || acimaMaximo()"
+                            [disabled]="loading() || !selectedInsumo() || form.invalid || acimaMaximo() || estoqueNegativo()"
                             type="submit"
                             class="w-full py-4 rounded-lg font-bold transition-all flex justify-center items-center gap-3 disabled:bg-gray-300 disabled:text-gray-500 disabled:cursor-not-allowed disabled:shadow-none"
-                            [class]="loading() || !selectedInsumo() || form.invalid || acimaMaximo() ? '' : 'text-on-primary bg-primary hover:opacity-90 shadow-lg shadow-primary/20 active:scale-[0.98]'"
-                            [style.background-image]="loading() || !selectedInsumo() || form.invalid || acimaMaximo() ? 'none' : 'linear-gradient(135deg, #003b93 0%, #0051c3 100%)'">
+                            [class]="loading() || !selectedInsumo() || form.invalid || acimaMaximo() || estoqueNegativo() ? '' : 'text-on-primary bg-primary hover:opacity-90 shadow-lg shadow-primary/20 active:scale-[0.98]'"
+                            [style.background-image]="loading() || !selectedInsumo() || form.invalid || acimaMaximo() || estoqueNegativo() ? 'none' : 'linear-gradient(135deg, #003b93 0%, #0051c3 100%)'">
                             <span class="material-symbols-outlined" data-icon="task_alt">task_alt</span>
                             {{ loading() ? 'Registrando...' : 'Registrar Movimentação' }}
                         </button>
@@ -208,17 +211,27 @@
                             <span class="material-symbols-outlined text-surface-variant text-4xl"
                                 data-icon="south">south</span>
                         </div>
-                        <div class="relative pl-6 border-l-2 border-primary" [class.border-error]="abaixoMinimo() || acimaMaximo()">
+                        <div class="relative pl-6 border-l-2 border-primary" [class.border-error]="abaixoMinimo() || acimaMaximo() || estoqueNegativo()">
                             <p class="text-[10px] font-bold uppercase tracking-tighter"
-                                [class.text-primary]="!abaixoMinimo() && !acimaMaximo()" [class.text-error]="abaixoMinimo() || acimaMaximo()">Saldo Após
+                                [class.text-primary]="!abaixoMinimo() && !acimaMaximo() && !estoqueNegativo()" [class.text-error]="abaixoMinimo() || acimaMaximo() || estoqueNegativo()">Saldo Após
                                 Operação</p>
-                            <p class="text-4xl font-black monospace" [class.text-primary]="!abaixoMinimo() && !acimaMaximo()"
-                                [class.text-error]="abaixoMinimo() || acimaMaximo()">{{ saldoPrevisto() }}</p>
+                            <p class="text-4xl font-black monospace" [class.text-primary]="!abaixoMinimo() && !acimaMaximo() && !estoqueNegativo()"
+                                [class.text-error]="abaixoMinimo() || acimaMaximo() || estoqueNegativo()">{{ saldoPrevisto() }}</p>
                             <div class="absolute -left-[5px] top-1 w-2 h-2 rounded-full"
-                                [class.bg-primary]="!abaixoMinimo() && !acimaMaximo()" [class.bg-error]="abaixoMinimo() || acimaMaximo()"></div>
+                                [class.bg-primary]="!abaixoMinimo() && !acimaMaximo() && !estoqueNegativo()" [class.bg-error]="abaixoMinimo() || acimaMaximo() || estoqueNegativo()"></div>
                         </div>
                     </div>
-                    @if (abaixoMinimo()) {
+                    @if (estoqueNegativo()) {
+                    <div class="mt-8 p-4 bg-error-container rounded-lg">
+                        <div class="flex items-start gap-3">
+                            <span class="material-symbols-outlined text-error" data-icon="error">error</span>
+                            <div>
+                                <p class="text-xs font-bold text-on-error-container">Estoque Negativo</p>
+                                <p class="text-[10px] text-on-error-container mt-1">Esta operação deixará o insumo com saldo negativo, o que não é permitido.</p>
+                            </div>
+                        </div>
+                    </div>
+                    } @else if (abaixoMinimo()) {
                     <div class="mt-8 p-4 bg-error-container rounded-lg">
                         <div class="flex items-start gap-3">
                             <span class="material-symbols-outlined text-error" data-icon="warning">warning</span>

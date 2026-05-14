@@ -72,6 +72,10 @@ export class NovaMovimentacao implements OnInit {
     return !!this.selectedInsumo() && this.saldoPrevisto() > max;
   });
 
+  estoqueNegativo = computed(() => {
+    return !!this.selectedInsumo() && this.saldoPrevisto() < 0;
+  });
+
   filteredInsumos = computed(() => {
     const term = this.searchTerm().toLowerCase();
     return this.insumos().filter(insumo => 
@@ -165,8 +169,13 @@ export class NovaMovimentacao implements OnInit {
       return;
     }
 
-    const userNome = this.authService.usuario()?.nome;
-    if (!userNome) {
+    if (this.estoqueNegativo()) {
+      this.error.set('Erro: A operação deixará o estoque negativo, o que não é permitido.');
+      return;
+    }
+
+    const userId = this.authService.usuario()?.id;
+    if (!userId) {
        this.error.set('Erro: Usuário não autenticado.');
        return;
     }
@@ -182,7 +191,7 @@ export class NovaMovimentacao implements OnInit {
       quantidade: Number(dados.quantidade),
       linha_destino: dados.linha_destino || null,
       observacao: dados.observacao || null,
-      registrado_por: userNome
+      registrado_por: userId
     };
 
     this.movimentacaoService.create(payload).subscribe({
