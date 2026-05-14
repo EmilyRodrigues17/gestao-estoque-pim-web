@@ -226,7 +226,7 @@
                             <span class="text-sm text-on-surface-variant">{{ movimentacao.observacao || '-' }}</span>
                         }
                         @case ('registrado_por') {
-                            <span class="text-sm text-on-surface-variant font-medium">{{ getNomeUsuario(movimentacao.registrado_por) }}</span>
+                            <span class="text-sm text-on-surface-variant font-medium">{{ movimentacao.usuario?.nome || movimentacao.registrado_por }}</span>
                         }
                     }
                 </ng-template>

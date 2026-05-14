@@ -11,8 +11,7 @@ import { AuthService } from '../../../core/auth/auth.service';
 import { PerfilAcesso } from '../../../core/models/perfil-acesso';
 import { DatePipe } from '@angular/common';
 import { MovimentacoesChart } from '../../../shared/movimentacoes-chart/movimentacoes-chart';
-import { UsuarioService } from '../../../core/services/usuario.service';
-import { Usuario } from '../../../core/models/usuario';
+
 
 
 @Component({
@@ -25,7 +24,6 @@ export class InsumoDetails implements OnInit {
   private insumoService = inject(InsumoService);
   private MovimentacaoService = inject(MovimentacaoService);
   private authService = inject(AuthService);
-  private usuarioService = inject(UsuarioService);
 
   private route = inject(ActivatedRoute);
 
@@ -45,15 +43,6 @@ export class InsumoDetails implements OnInit {
   // ---
   insumo = signal<Insumo | null>(null);
   historicoMovimentacao = signal<Movimentacao[]>([]);
-  usuarios = signal<Usuario[]>([]);
-
-  usuariosMap = computed(() => {
-    const map = new Map<string, string>();
-    for (const u of this.usuarios()) {
-      map.set(u.id, u.nome);
-    }
-    return map;
-  });
 
   error = signal<string | null>(null);
   successMessage = signal<string | null>(null);
@@ -136,7 +125,6 @@ export class InsumoDetails implements OnInit {
     const id = this.route.snapshot.paramMap.get('id')!;
     this.carregarDetalheInsumo(id);
     this.carregarHistoricoMovimentacao(id);
-    this.carregarUsuarios();
 
     this.form.get('quantidade')?.valueChanges.subscribe(valor => {
       this.quantidadeDigitada.set(Number(valor) || 0);
@@ -193,21 +181,7 @@ export class InsumoDetails implements OnInit {
     })
   }
 
-  carregarUsuarios(): void {
-    this.usuarioService.findAll().subscribe({
-      next: (usuarios) => {
-        this.usuarios.set(usuarios);
-      },
-      error: (err) => {
-        console.log('Erro ao carregar usuarios: ', err);
-      }
-    });
-  }
 
-  getNomeUsuario(id: string): string {
-    if (!id) return 'Usuario não registrado';
-    return this.usuariosMap().get(id) || id;
-  }
   
   onPageChange(page: number | string) {
     if (typeof page === 'number') {
@@ -215,7 +189,6 @@ export class InsumoDetails implements OnInit {
     }
   }
 
-  
 
   // --- Modal formulario
   onOpenCreate(): void {

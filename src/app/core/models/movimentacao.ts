@@ -10,6 +10,7 @@ export interface Movimentacao {
     timestamp: string;
     insumo_id: string;
     insumo: { nome: string; codigo: string};
+    usuario?: { nome: string };
 }
 
 export interface CreateMovimentacao {

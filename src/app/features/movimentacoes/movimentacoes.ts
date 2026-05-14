@@ -10,8 +10,7 @@ import { Insumo } from '../../core/models/insumo';
 import { Router } from '@angular/router';
 import { AuthService } from '../../core/auth/auth.service';
 import { PerfilAcesso } from '../../core/models/perfil-acesso';
-import { UsuarioService } from '../../core/services/usuario.service';
-import { Usuario } from '../../core/models/usuario';
+
 
 
 @Component({
@@ -24,7 +23,6 @@ export class Movimentacoes implements OnInit {
   private movimentacaoService = inject(MovimentacaoService);
   private insumoService = inject(InsumoService);
   private authService = inject(AuthService);
-  private usuarioService = inject(UsuarioService);
 
   protected readonly isGestor = computed(() => this.authService.perfilUsuario() === PerfilAcesso.GESTOR);
 
@@ -44,15 +42,6 @@ export class Movimentacoes implements OnInit {
   // ---
   historicoMovimentacao = signal<Movimentacao[]>([]);
   insumos = signal<Insumo[]>([]);
-  usuarios = signal<Usuario[]>([]);
-
-  usuariosMap = computed(() => {
-    const map = new Map<string, string>();
-    for (const u of this.usuarios()) {
-      map.set(u.id, u.nome);
-    }
-    return map;
-  });
   
   error = signal<string | null>(null);
   successMessage = signal<string | null>(null);
@@ -80,7 +69,6 @@ export class Movimentacoes implements OnInit {
   ngOnInit(): void {
     this.carregarHistoricoMovimentacao();
     this.carregarInsumos();
-    this.carregarUsuarios();
   }
 
   carregarHistoricoMovimentacao(): void {
@@ -127,22 +115,6 @@ export class Movimentacoes implements OnInit {
         console.log('Erro ao carregar insumos: ',err)
       }
     })
-  }
-
-  carregarUsuarios(): void {
-    this.usuarioService.findAll().subscribe({
-      next: (usuarios) => {
-        this.usuarios.set(usuarios);
-      },
-      error: (err) => {
-        console.log('Erro ao carregar usuarios: ', err);
-      }
-    });
-  }
-
-  getNomeUsuario(id: string): string {
-    if (!id) return 'Usuario não registrado';
-    return this.usuariosMap().get(id) || id;
   }
 
   onFiltroTipoChange(): void {
