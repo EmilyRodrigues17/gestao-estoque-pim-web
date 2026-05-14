@@ -29,6 +29,7 @@ export class Insumos implements OnInit, HasUnsavedChanges{
 
   // ---
   insumos = signal<Insumo[]>([]);
+  insumosTotais = signal<Insumo[]>([]);
   categorias = signal<Categoria[]>([]);
 
   loading = signal(false);
@@ -40,6 +41,26 @@ export class Insumos implements OnInit, HasUnsavedChanges{
   itemsPerPage = signal<number>(5);
 
   totalItems = computed(() => this.insumos()?.length || 0);
+
+  totalCadastrados = computed(() => this.insumosTotais()?.length || 0);
+
+  totalCriticos = computed(() => {
+    const lista = this.insumosTotais() || [];
+    return lista.filter(i => i.status_estoque === 'critico' || Number(i.estoque_atual) < Number(i.estoque_minimo)).length;
+  });
+
+  totalEstaveis = computed(() => {
+    const lista = this.insumosTotais() || [];
+    return lista.filter(i => i.status_estoque === 'estavel').length;
+  });
+
+  percentualEstaveis = computed(() => {
+    const lista = this.insumosTotais() || [];
+    if (lista.length === 0) return 0;
+    const estaveis = this.totalEstaveis();
+    return Math.round((estaveis / lista.length) * 100);
+  });
+
 
   paginatedInsumos = computed(() => {
     const insumos = this.insumos() || [];
@@ -102,8 +123,20 @@ export class Insumos implements OnInit, HasUnsavedChanges{
 
   // -----
   ngOnInit(): void {
+    this.carregarInsumosTotais();
     this.carregarInsumos();
     this.carregarCategorias();
+  }
+
+  carregarInsumosTotais(): void {
+    this.insumoService.findAll({}).subscribe({
+      next: (insumos) => {
+        this.insumosTotais.set(insumos);
+      },
+      error: (err) => {
+        console.log('Erro ao carregar insumos totais', err);
+      }
+    });
   }
 
   // ----
@@ -230,6 +263,7 @@ export class Insumos implements OnInit, HasUnsavedChanges{
           this.successMessage.set('Insumo atualizado com sucesso!');
           this.form.markAsPristine();
           this.onCloseForm();
+          this.carregarInsumosTotais();
           this.carregarInsumos();
         },
         error: (err) => {
@@ -244,6 +278,7 @@ export class Insumos implements OnInit, HasUnsavedChanges{
           this.successMessage.set('Insumo cadastrado com sucesso!');
           this.form.markAsPristine();
           this.onCloseForm();
+          this.carregarInsumosTotais();
           this.carregarInsumos();
         },
         error: (err) => {
@@ -289,6 +324,7 @@ export class Insumos implements OnInit, HasUnsavedChanges{
           this.insumoService.delete(insumo.id).subscribe({
             next: () => {
               this.successMessage.set('Insumo desativado com sucesso!');
+              this.carregarInsumosTotais();
               this.carregarInsumos();
             },
             error: (err) => {
@@ -305,6 +341,7 @@ export class Insumos implements OnInit, HasUnsavedChanges{
           this.insumoService.update(insumo.id, { ativo: true }).subscribe({
             next: () => {
               this.successMessage.set('Insumo reativado com sucesso!');
+              this.carregarInsumosTotais();
               this.carregarInsumos();
             },
             error: (err) => {
