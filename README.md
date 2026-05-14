@@ -1,14 +1,14 @@
-# EstoquePIM - Interface de Gestão de Estoque
+# PRISM - Interface de Gestão de Estoque
 
 [![Angular Version](https://img.shields.io/badge/angular-21.2-dd0031.svg)](https://angular.dev/)
 [![Tailwind CSS](https://img.shields.io/badge/tailwind-4.1-38b2ac.svg)](https://tailwindcss.com/)
 [![TypeScript](https://img.shields.io/badge/typescript-5.9-blue.svg)](https://www.typescriptlang.org/)
 
-Portal web moderno e responsivo desenvolvido para a gestão de estoque de insumos industriais no **Polo Industrial de Manaus (PIM)**. Esta interface consome a API do EstoquePIM para fornecer visibilidade em tempo real e controle operacional aos almoxarifes e gestores.
+Portal web moderno e responsivo desenvolvido para a gestão de estoque de insumos industriais no **Polo Industrial de Manaus (PIM)**. Esta interface consome a API do PRISM para fornecer visibilidade em tempo real e controle operacional aos almoxarifes e gestores.
 
 ## Sobre o Projeto
 
-O frontend do **EstoquePIM** foi projetado com foco em **experiência do usuário (UX)** e **desempenho**. Utilizando as funcionalidades mais recentes do Angular, o sistema oferece uma interface fluida, com atualizações reativas e uma navegação intuitiva, garantindo que o controle de materiais seja feito de forma rápida e livre de erros.
+O frontend do **PRISM** foi projetado com foco em **experiência do usuário (UX)** e **desempenho**. Utilizando as funcionalidades mais recentes do Angular, o sistema oferece uma interface fluida, com atualizações reativas e uma navegação intuitiva, garantindo que o controle de materiais seja feito de forma rápida e livre de erros.
 
 ## Tecnologias Utilizadas
 
